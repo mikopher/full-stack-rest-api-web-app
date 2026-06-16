@@ -35,9 +35,12 @@ function sumValues($arr, $arrayNumber)
     // Plan: use number_format with 2 decimal places so the final display always shows two digits.
     // Solve Challenge 1 here: Sum all values
 
+    foreach ($arr as $value) {
+        $total += $value;
+    }
 
     // Solve Challenge 2 here: Format to 2 decimal places
-    $modifiedTotal = "?";
+    $modifiedTotal = number_format($total, 2, ".", "");
 
     // End Solution Edits
     printScenario2Output($total, $modifiedTotal);
