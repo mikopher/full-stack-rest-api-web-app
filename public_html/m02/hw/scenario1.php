@@ -32,6 +32,16 @@ function printOdds($arr, $arrayNumber)
     // Plan: join the odd values with ", " so there is no leading or trailing comma.
     // set solution to $output_result variable
    
+    $odd_values = [];
+
+    foreach ($arr as $value) {
+        if ($value % 2 !== 0) {
+            $odd_values[] = $value;
+        }
+    }
+
+$output_result = implode(", ", $odd_values);
+    
     // End Solution Edits
     printScenario1Output($output_result);
     echo "</div>";
