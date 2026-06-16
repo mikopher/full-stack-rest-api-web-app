@@ -3,7 +3,7 @@
 // @ts-nocheck
 require_once "base.php";
 
-$ucid = "mt85"; // <-- set your ucid
+$ucid = "mrc82"; // <-- set your ucid
 
 // Don't edit the arrays below, they are used to test your code
 $array1 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -26,7 +26,10 @@ function printOdds($arr, $arrayNumber)
 
     
     $output_result = "";
-    // Start Solution Edits
+    // Start Solution Editss
+    // mrc82 - 2026-06-15 - Plan: create an array to collect only the odd values.
+    // Plan: loop through the current array and use modulo 2 to check if each value is odd.
+    // Plan: join the odd values with ", " so there is no leading or trailing comma.
     // set solution to $output_result variable
    
     // End Solution Edits
