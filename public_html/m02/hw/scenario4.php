@@ -38,6 +38,27 @@ function transformText($arr, $arrayNumber) {
         // Plan: clean extra spaces by trimming the ends and replacing repeated spaces with one space.
         // Plan: convert the cleaned phrase to title case.
         // Plan: save the final cleaned phrase into placeholderForModifiedPhrase.
+
+        $cleanedPhrase = preg_replace("/[^a-zA-Z0-9 ]/", "", $text);
+        $cleanedPhrase = trim($cleanedPhrase);
+        $cleanedPhrase = preg_replace("/\s+/", " ", $cleanedPhrase);
+        $placeholderForModifiedPhrase = ucwords(strtolower($cleanedPhrase));
+
+        $length = strlen($placeholderForModifiedPhrase);
+
+        if ($length <= 2) {
+            $placeholderForMiddleCharacters = "Not enough characters";
+        } else {
+            $middleText = substr($placeholderForModifiedPhrase, 1, $length - 2);
+
+            if (strlen($middleText) <= 3) {
+                $placeholderForMiddleCharacters = $middleText;
+            } else {
+                $start = ceil((strlen($middleText) - 3) / 2);
+                $placeholderForMiddleCharacters = substr($middleText, $start, 3);
+            }
+        }
+
         // End Solution Edits
     
         printScenario4Transformations($index, $placeholderForModifiedPhrase, $placeholderForMiddleCharacters);
