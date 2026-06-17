@@ -35,6 +35,13 @@ function bePositive($arr, $arrayNumber)
     // Plan: put the positive value back into the same index so the output stays in order.
     // Plan: keep strings as strings, integers as integers, and decimals as decimals.
 
+    foreach ($arr as $index => $value) {
+    if (is_string($value)) {
+            $output[$index] = ltrim($value, "-");
+        } else {
+            $output[$index] = abs($value);
+        }
+    }
     // End Solution Edits
     printScenario3Output($output);
     echo "</div>";
