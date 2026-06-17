@@ -3,7 +3,7 @@
 // @ts-nocheck
 require_once "base.php";
 
-$ucid = "mt85"; // <-- set your ucid
+$ucid = "mrc82"; // <-- set your ucid
 
 // Don't edit the arrays below, they are used to test your code
 $array1 = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6];
@@ -30,11 +30,17 @@ function sumValues($arr, $arrayNumber)
 
     $total = 0;
     // Start Solution Edits
+    // mrc82 - 2026-06-16 - Plan: start with total at 0 and add each number from the array.
+    // Plan: loop through the array one value at a time and add each value to total.
+    // Plan: use number_format with 2 decimal places so the final display always shows two digits.
     // Solve Challenge 1 here: Sum all values
 
+    foreach ($arr as $value) {
+        $total += $value;
+    }
 
     // Solve Challenge 2 here: Format to 2 decimal places
-    $modifiedTotal = "?";
+    $modifiedTotal = number_format($total, 2, ".", "");
 
     // End Solution Edits
     printScenario2Output($total, $modifiedTotal);
