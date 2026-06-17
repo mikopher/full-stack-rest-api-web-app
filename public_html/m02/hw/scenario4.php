@@ -3,7 +3,7 @@
 // @ts-nocheck
 require_once "base.php";
 
-$ucid = "mt85"; // <-- set your ucid
+$ucid = "mrc82"; // <-- set your ucid
 
 // Don't edit the arrays below, they are used to test your code
 $array1 = ["hello world!", "php programming", "special@#$%^&characters", "numbers 123 456", "mIxEd CaSe InPut!"];
@@ -34,9 +34,30 @@ function transformText($arr, $arrayNumber) {
     $placeholderForMiddleCharacters = "";
     foreach ($arr as $index => $text) {
         // Start Solution Edits
-        // Step 1: sketch out plan using comments (include ucid and date)
-        // Step 2: Add/commit your outline of comments (required for full credit)
-        // Step 3: Add code to solve the problem (add/commit as needed)
+        // mrc82 - 2026-06-16 - Plan: remove symbols and keep only letters, numbers, and spaces.
+        // Plan: clean extra spaces by trimming the ends and replacing repeated spaces with one space.
+        // Plan: convert the cleaned phrase to title case.
+        // Plan: save the final cleaned phrase into placeholderForModifiedPhrase.
+
+        $cleanedPhrase = preg_replace("/[^a-zA-Z0-9 ]/", "", $text);
+        $cleanedPhrase = trim($cleanedPhrase);
+        $cleanedPhrase = preg_replace("/\s+/", " ", $cleanedPhrase);
+        $placeholderForModifiedPhrase = ucwords(strtolower($cleanedPhrase));
+
+        $length = strlen($placeholderForModifiedPhrase);
+
+        if ($length <= 2) {
+            $placeholderForMiddleCharacters = "Not enough characters";
+        } else {
+            $middleText = substr($placeholderForModifiedPhrase, 1, $length - 2);
+
+            if (strlen($middleText) <= 3) {
+                $placeholderForMiddleCharacters = $middleText;
+            } else {
+                $start = ceil((strlen($middleText) - 3) / 2);
+                $placeholderForMiddleCharacters = substr($middleText, $start, 3);
+            }
+        }
 
         // End Solution Edits
     
