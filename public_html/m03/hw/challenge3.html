@@ -1,0 +1,127 @@
+<!--
+Challenge 3: Carousel Layout with Swiping
+-----------------------------------------
+Requirements:
+    Goal: edit the allowed style and script areas to solve the carousel challenge.
+
+    Expected CSS behavior:
+    1. The header is positioned at the top.
+    2. The carousel takes up the full available width.
+    3. The buttons are centered.
+    4. The carousel panels fill the full height of the carousel.
+    5. The carousel content is centered vertically and horizontally.
+    6. The top navigation links remain page links, not carousel controls.
+
+    Expected JavaScript behavior:
+    1. Each carousel button has the appropriate event listener.
+    2. The Previous and Next carousel buttons control the panels.
+    3. Only one panel is shown at a time.
+    4. The carousel moves through the panels in order.
+    5. The carousel loops when it reaches the first or last panel.
+
+Extra credit:
+    1. Allow mouse swipe on the carousel to cycle through the panels similar to how the buttons would work.
+
+Workflow:
+    1. Update the visible UCID in the header tag.
+    2. Add UCID/date and planning comments before the solution code.
+    3. Commit the planning comments before committing the finished solution.
+    4. Test the HTML file locally before collecting evidence on qa.
+
+Notes:
+    - Edit only your UCID, the style block, and the script block at the bottom of this file.
+    - Do not edit styles.css, utils.js, or the page markup outside the allowed areas.
+    - Any CSS/JavaScript approach is acceptable if the required behavior is accomplished.
+    - The Previous/Next carousel buttons should control the panels; the top navigation links should remain page links.
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carousel UI</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="challenge3">
+    <nav>
+        <ul>
+            <li><a href="challenge1.html">Challenge 1</a></li>
+            <li><a href="challenge2.html" >Challenge 2</a></li>
+            <li><a href="challenge3.html" class="active">Challenge 3</a></li>
+        </ul>
+    </nav>
+    <!-- Edit your UCID here -->
+    <header>Header Section (mt85)</header>
+    <!-- Don't make any other edits to the HTML -->
+    <nav>
+        <button>Previous</button>
+        <button>Next</button>
+    </nav>
+
+    <div class="carousel">
+        <div class="carousel-container">
+            <div class="panel"><div>Panel 0:
+                <ul>
+                    <li>Expected CSS behavior:
+                        <ul>
+                            <li>The header is positioned at the top.</li>
+                            <li>The carousel takes up the full available width.</li>
+                            <li>The buttons are centered.</li>
+                            <li>The carousel panels fill the full height of the carousel.</li>
+                            <li>The carousel content is centered vertically and horizontally.</li>
+                            <li>The top navigation links remain page links, not carousel controls.</li>
+                        </ul>
+                    </li>
+                    <li>Expected JavaScript behavior:
+                        <ul>
+                            <li>Each carousel button has the appropriate event listener.</li>
+                            <li>The Previous and Next carousel buttons control the panels.</li>
+                            <li>Only one panel is shown at a time.</li>
+                            <li>The carousel moves through the panels in order.</li>
+                            <li>The carousel loops when it reaches the first or last panel.</li>
+                        </ul>
+                    </li>
+                    <li>Extra credit:
+                        <ul>
+                            <li>Allow mouse swipe on the carousel to cycle through the panels similar to how the buttons would work.</li>
+                        </ul>
+                    </li>
+                    <li>Workflow:
+                        <ul>
+                            <li>Update the visible UCID in the header tag.</li>
+                            <li>Add UCID/date and planning comments before the solution code.</li>
+                            <li>Commit the planning comments before committing the finished solution.</li>
+                            <li>Test the HTML file locally before collecting evidence on qa.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            </div>
+            <div class="panel"><div>Panel 1: HTML Forms</div></div>
+            <div class="panel"><div>Panel 2: CSS Grid</div></div>
+            <div class="panel"><div>Panel 3: JavaScript Events</div></div>
+            <div class="panel"><div>Panel 4: Responsive Design</div></div>
+            <div class="panel"><div>Panel 5: Accessibility Best Practices</div></div>
+        </div>
+    </div>
+    <script src="utils.js"></script>
+
+    <script>
+        /*
+            Add UCID/date and planning comments before your JavaScript solution.
+            Solve the carousel button logic here by attaching appropriate event listeners.
+        */
+    </script>
+
+    <style>
+        /*
+            Add UCID/date and planning comments before your CSS solution.
+            Write Challenge 3 layout CSS here; do not override anything in styles.css.
+        */
+    </style>
+</body>
+
+</html>

@@ -1,0 +1,93 @@
+<!--
+Challenge 1: Full-Page Layout with Scrollable Content
+-----------------------------------------------------
+Requirements:
+    Goal: edit the allowed style area to solve the fixed-layout challenge.
+
+    Expected layout:
+    1. The header stays fixed at the top of the page.
+    2. The footer stays fixed at the bottom of the page.
+    3. The middle content area scrolls independently.
+    4. The browser window itself should not show the main page scrollbar for the content.
+    5. The full page should fill the viewport height.
+    6. The borders around header, main, and footer should remain intact and visible.
+
+Workflow:
+    1. Update the visible UCID in the header tag.
+    2. Add UCID/date and planning comments before the solution code.
+    3. Commit the planning comments before committing the finished solution.
+    4. Test the HTML file locally before collecting evidence on qa.
+
+Notes:
+ - Edit only your UCID and the style block at the bottom of this file.
+ - Do not edit styles.css, utils.js, or the page markup outside the allowed areas.
+ - Any CSS approach is acceptable if the required behavior is accomplished.
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Full-Page Layout </title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="challenge1">
+    <nav>
+        <ul>
+            <li><a href="challenge1.html" class="active">Challenge 1</a></li>
+            <li><a href="challenge2.html">Challenge 2</a></li>
+            <li><a href="challenge3.html">Challenge 3</a></li>
+        </ul>
+    </nav>
+    <!-- Edit your UCID here -->
+    <header>Header Section (mt85)</header>
+    <!-- Don't make any other edits to the HTML -->
+    <main>
+        <div class="content">
+            <h2>Lorem Ipsum</h2>
+            <section>
+                <ul>
+                    <li>Expected layout:
+                        <ul>
+                            <li>The header stays fixed at the top of the page.</li>
+                            <li>The footer stays fixed at the bottom of the page.</li>
+                            <li>The middle content area scrolls independently.</li>
+                            <li>The browser window itself should not show the main page scrollbar for the content.</li>
+                            <li>The full page should fill the viewport height.</li>
+                            <li>The borders around header, main, and footer should remain intact and visible.</li>
+                        </ul>
+                    </li>
+                    <li>Workflow:
+                        <ul>
+                            <li>Update the visible UCID in the header tag.</li>
+                            <li>Add UCID/date and planning comments before the solution code.</li>
+                            <li>Commit the planning comments before committing the finished solution.</li>
+                            <li>Test the HTML file locally before collecting evidence on qa.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </section>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec id posuere felis. Pellentesque tincidunt,
+                mauris sed pretium vehicula, enim odio lacinia urna, vel blandit sapien turpis at enim. Suspendisse a
+                tortor vel nunc lobortis dapibus in id dolor. Morbi elementum ligula nec dictum fringilla. Sed sed
+                sagittis diam, et consequat lacus. Suspendisse non dui mauris. Vivamus molestie mattis libero, nec
+                placerat dolor imperdiet vitae. Etiam dapibus orci lacus, eu tristique ipsum sagittis in. Fusce
+                porttitor mi non consectetur dictum.</p>
+        </div>
+    </main>
+
+    <footer>Footer Section</footer>
+    <script src="utils.js"></script>
+
+    <style>
+        /*
+            Add UCID/date and planning comments before your CSS solution.
+            Write Challenge 1 layout CSS here; do not override anything in styles.css.
+        */
+    </style>
+</body>
+
+</html>

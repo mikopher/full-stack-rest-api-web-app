@@ -1,0 +1,135 @@
+<!--
+Challenge 2: Sidebar Layout with Collapsing Sidebars
+-----------------------------------------------------
+Requirements:
+    Goal: edit the allowed style and script areas to solve the sidebar layout and toggle challenge.
+
+    Expected CSS behavior:
+    1. The header is positioned at the top.
+    2. The content region takes up the remaining height.
+    3. The left and right sidebars dock to their respective sides.
+    4. Each sidebar uses 15% width when open.
+    5. Each collapsed sidebar collapses completely while keeping its button usable.
+    6. The content area uses the remaining width.
+
+    Expected JavaScript behavior:
+    1. Each sidebar button has the appropriate event listener.
+    2. Each button toggles only its matching sidebar.
+    3. The toggle should not hide or lose access to the button.
+    4. The content area adjusts when the left sidebar, right sidebar, or both sidebars are collapsed.
+
+Workflow:
+    1. Update the visible UCID in the header tag.
+    2. Add UCID/date and planning comments before the solution code.
+    3. Commit the planning comments before committing the finished solution.
+    4. Test the HTML file locally before collecting evidence on qa.
+
+Notes:
+ - Edit only your UCID, the style block, and the script block at the bottom of this file.
+ - Do not edit styles.css, utils.js, or the page markup outside the allowed areas.
+ - Any CSS/JavaScript approach is acceptable if the required behavior is accomplished.
+ - A collapsed sidebar must collapse completely, but the button must remain usable.
+
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sidebar Layout</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="challenge2">
+    <nav>
+        <ul>
+            <li><a href="challenge1.html">Challenge 1</a></li>
+            <li><a href="challenge2.html" class="active">Challenge 2</a></li>
+            <li><a href="challenge3.html">Challenge 3</a></li>
+        </ul>
+    </nav>
+    <!-- Edit your UCID here -->
+    <header>Header Section (mt85)</header>
+    <!-- Don't make any other edits to the HTML -->
+    <div class="container">
+        <aside id="left-sidebar">
+            <button>&gt;</button>
+            <ul>
+                <li>Item 1</li>
+                <li>Item 2</li>
+                <li>Item 3</li>
+            </ul>
+        </aside>
+
+        <main class="content">
+            <h2>Lorem Ipsum</h2>
+            <section>
+                <!-- Challenge Requirements -->
+                <h3>Requirements</h3>
+                <ul>
+                    <li>Expected CSS behavior:
+                        <ul>
+                            <li>The header is positioned at the top.</li>
+                            <li>The content region takes up the remaining height.</li>
+                            <li>The left and right sidebars dock to their respective sides.</li>
+                            <li>Each sidebar uses 15% width when open.</li>
+                            <li>Each collapsed sidebar collapses completely while keeping its button usable.</li>
+                            <li>The content area uses the remaining width.</li>
+                        </ul>
+                    </li>
+                    <li>Expected JavaScript behavior:
+                        <ul>
+                            <li>Each sidebar button has the appropriate event listener.</li>
+                            <li>Each button toggles only its matching sidebar.</li>
+                            <li>The toggle should not hide or lose access to the button.</li>
+                            <li>The content area adjusts when the left sidebar, right sidebar, or both sidebars are collapsed.</li>
+                        </ul>
+                    </li>
+                    <li>Workflow:
+                        <ul>
+                            <li>Update the visible UCID in the header tag.</li>
+                            <li>Add UCID/date and planning comments before the solution code.</li>
+                            <li>Commit the planning comments before committing the finished solution.</li>
+                            <li>Test the HTML file locally before collecting evidence on qa.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </section>
+            <p>Praesent arcu neque, ornare vitae dolor eget, dapibus sagittis ante. Donec vehicula mi a finibus
+                malesuada. Vivamus dictum nisl a felis varius, id sodales turpis fringilla. In elit urna, rhoncus at
+                turpis ut, pellentesque iaculis odio. Nam eu felis molestie, eleifend dolor id, bibendum mi. Donec
+                pellentesque sem at sapien bibendum, quis aliquam nibh aliquam. In facilisis est sapien, ut accumsan
+                arcu rutrum id. Fusce a varius libero, at varius ex. Donec odio tellus, finibus eget quam ac, maximus
+                consequat neque.</p>
+        </main>
+
+        <aside id="right-sidebar">
+            <button>&lt;</button>
+            <ul>
+                <li>Item 1</li>
+                <li>Item 2</li>
+                <li>Item 3</li>
+            </ul>
+        </aside>
+    </div>
+
+    <script src="utils.js"></script>
+
+    <script>
+        /*
+            Add UCID/date and planning comments before your JavaScript solution.
+            Solve the sidebar toggle logic here by attaching appropriate event listeners.
+        */
+    </script>
+
+    <style>
+        /*
+            Add UCID/date and planning comments before your CSS solution.
+            Write Challenge 2 layout CSS here; do not override anything in styles.css.
+        */
+    </style>
+</body>
+
+</html>
