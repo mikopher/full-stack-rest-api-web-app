@@ -83,16 +83,36 @@ Notes:
     <script src="utils.js"></script>
 
     <style>
-        /*
-            UCID: mrc82
-            Date: 2026-06-22
+    /*
+        UCID: mrc82
+        Date: 2026-06-22
 
-            Planning:
-            - Make the page fill the full viewport and prevent the browser window from scrolling.
-            - Keep the header and footer fixed at the top and bottom.
-            - Position the main area between them and allow only its content to scroll.
-            - Preserve the visible borders and prevent sizing from overflowing the viewport.
-        */
+        Planning:
+        - Make the page fill the full viewport and prevent the browser window from scrolling.
+        - Keep the header and footer fixed at the top and bottom.
+        - Position the main area between them and allow only its content to scroll.
+        - Preserve the visible borders and prevent sizing from overflowing the viewport.
+    */
+
+        .challenge1 {
+            height: 100vh;
+            height: 100dvh;
+            display: grid;
+            grid-template-rows: auto auto minmax(0, 1fr) auto;
+            overflow: hidden;
+        }
+
+        .challenge1 nav,
+        .challenge1 header,
+        .challenge1 main,
+        .challenge1 footer {
+            box-sizing: border-box;
+        }
+
+        .challenge1 main {
+            min-height: 0;
+            overflow-y: auto;
+        }
     </style>
 </body>
 
