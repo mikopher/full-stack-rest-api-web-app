@@ -128,6 +128,24 @@ Notes:
             - Toggle a collapsed class only on the sidebar connected to that button.
             - Keep each button available after its sidebar collapses.
         */
+
+        const leftSidebar = document.querySelector("#left-sidebar");
+        const rightSidebar = document.querySelector("#right-sidebar");
+
+        const leftButton = leftSidebar?.querySelector("button");
+        const rightButton = rightSidebar?.querySelector("button");
+
+        if (leftSidebar && leftButton) {
+            leftButton.addEventListener("click", function () {
+                leftSidebar.classList.toggle("collapsed");
+            });
+        }
+
+        if (rightSidebar && rightButton) {
+            rightButton.addEventListener("click", function () {
+                rightSidebar.classList.toggle("collapsed");
+            });
+        }
     </script>
 
     <style>
@@ -141,6 +159,63 @@ Notes:
             - Give each open sidebar 15% width and let the main content use the remaining space.
             - Collapse either sidebar completely while keeping its toggle button accessible.
         */
+
+        .challenge2 {
+            height: 100vh;
+            height: 100dvh;
+            display: grid;
+            grid-template-rows: auto auto minmax(0, 1fr);
+            overflow: hidden;
+        }
+
+        .challenge2 .container {
+            display: flex;
+            width: 100%;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .challenge2 .container > aside {
+            flex: 0 0 15%;
+            min-width: 0;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .challenge2 .content {
+            flex: 1;
+            min-width: 0;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+
+        .challenge2 aside ul {
+            margin-top: 2.5rem;
+            overflow: hidden;
+        }
+
+        .challenge2 aside button {
+            position: absolute;
+            top: 0.5rem;
+            z-index: 2;
+        }
+
+        .challenge2 #left-sidebar button {
+            left: 0.25rem;
+        }
+
+        .challenge2 #right-sidebar button {
+            right: 0.25rem;
+        }
+
+        .challenge2 .container > aside.collapsed {
+            flex-basis: 0;
+            width: 0;
+        }
+
+        .challenge2 .container > aside.collapsed ul {
+            display: none;
+        }
     </style>
 </body>
 
