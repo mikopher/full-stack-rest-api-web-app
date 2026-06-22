@@ -1,0 +1,261 @@
+<!--
+Challenge 3: Carousel Layout with Swiping
+-----------------------------------------
+Requirements:
+    Goal: edit the allowed style and script areas to solve the carousel challenge.
+
+    Expected CSS behavior:
+    1. The header is positioned at the top.
+    2. The carousel takes up the full available width.
+    3. The buttons are centered.
+    4. The carousel panels fill the full height of the carousel.
+    5. The carousel content is centered vertically and horizontally.
+    6. The top navigation links remain page links, not carousel controls.
+
+    Expected JavaScript behavior:
+    1. Each carousel button has the appropriate event listener.
+    2. The Previous and Next carousel buttons control the panels.
+    3. Only one panel is shown at a time.
+    4. The carousel moves through the panels in order.
+    5. The carousel loops when it reaches the first or last panel.
+
+Extra credit:
+    1. Allow mouse swipe on the carousel to cycle through the panels similar to how the buttons would work.
+
+Workflow:
+    1. Update the visible UCID in the header tag.
+    2. Add UCID/date and planning comments before the solution code.
+    3. Commit the planning comments before committing the finished solution.
+    4. Test the HTML file locally before collecting evidence on qa.
+
+Notes:
+    - Edit only your UCID, the style block, and the script block at the bottom of this file.
+    - Do not edit styles.css, utils.js, or the page markup outside the allowed areas.
+    - Any CSS/JavaScript approach is acceptable if the required behavior is accomplished.
+    - The Previous/Next carousel buttons should control the panels; the top navigation links should remain page links.
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carousel UI</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="challenge3">
+    <nav>
+        <ul>
+            <li><a href="challenge1.html">Challenge 1</a></li>
+            <li><a href="challenge2.html" >Challenge 2</a></li>
+            <li><a href="challenge3.html" class="active">Challenge 3</a></li>
+        </ul>
+    </nav>
+    <!-- Edit your UCID here -->
+    <header>Header Section (mrc82)</header>
+    <!-- Don't make any other edits to the HTML -->
+    <nav>
+        <button>Previous</button>
+        <button>Next</button>
+    </nav>
+
+    <div class="carousel">
+        <div class="carousel-container">
+            <div class="panel"><div>Panel 0:
+                <ul>
+                    <li>Expected CSS behavior:
+                        <ul>
+                            <li>The header is positioned at the top.</li>
+                            <li>The carousel takes up the full available width.</li>
+                            <li>The buttons are centered.</li>
+                            <li>The carousel panels fill the full height of the carousel.</li>
+                            <li>The carousel content is centered vertically and horizontally.</li>
+                            <li>The top navigation links remain page links, not carousel controls.</li>
+                        </ul>
+                    </li>
+                    <li>Expected JavaScript behavior:
+                        <ul>
+                            <li>Each carousel button has the appropriate event listener.</li>
+                            <li>The Previous and Next carousel buttons control the panels.</li>
+                            <li>Only one panel is shown at a time.</li>
+                            <li>The carousel moves through the panels in order.</li>
+                            <li>The carousel loops when it reaches the first or last panel.</li>
+                        </ul>
+                    </li>
+                    <li>Extra credit:
+                        <ul>
+                            <li>Allow mouse swipe on the carousel to cycle through the panels similar to how the buttons would work.</li>
+                        </ul>
+                    </li>
+                    <li>Workflow:
+                        <ul>
+                            <li>Update the visible UCID in the header tag.</li>
+                            <li>Add UCID/date and planning comments before the solution code.</li>
+                            <li>Commit the planning comments before committing the finished solution.</li>
+                            <li>Test the HTML file locally before collecting evidence on qa.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            </div>
+            <div class="panel"><div>Panel 1: HTML Forms</div></div>
+            <div class="panel"><div>Panel 2: CSS Grid</div></div>
+            <div class="panel"><div>Panel 3: JavaScript Events</div></div>
+            <div class="panel"><div>Panel 4: Responsive Design</div></div>
+            <div class="panel"><div>Panel 5: Accessibility Best Practices</div></div>
+        </div>
+    </div>
+    <script src="utils.js"></script>
+
+    <script>
+        /*
+            UCID: mrc82
+            Date: 2026-06-22
+
+            JavaScript Planning:
+            - Select the carousel panels and only the Previous and Next buttons.
+            - Track the currently active panel with an index.
+            - Hide every panel except the active panel.
+            - Move backward or forward when the matching button is clicked.
+            - Wrap the index from the last panel to the first and from the first to the last.
+
+            Extra Credit Planning:
+            - Record the mouse position when dragging begins and ends.
+            - Compare the horizontal distance to determine the swipe direction.
+            - Reuse the same previous and next carousel functions used by the buttons.
+        */
+
+            const carousel = document.querySelector(".challenge3 .carousel");
+            const panels = document.querySelectorAll(".challenge3 .panel");
+            const carouselButtons = document.querySelectorAll(
+                ".challenge3 > nav:last-of-type button"
+            );
+
+            const previousButton = carouselButtons[0];
+            const nextButton = carouselButtons[1];
+
+            let currentIndex = 0;
+
+            function showPanel(index) {
+                currentIndex = (index + panels.length) % panels.length;
+
+                panels.forEach(function (panel, panelIndex) {
+                    panel.classList.toggle("active", panelIndex === currentIndex);
+                });
+            }
+
+            function showPreviousPanel() {
+                showPanel(currentIndex - 1);
+            }
+
+            function showNextPanel() {
+                showPanel(currentIndex + 1);
+            }
+
+            if (previousButton && nextButton && panels.length > 0) {
+                previousButton.addEventListener("click", showPreviousPanel);
+                nextButton.addEventListener("click", showNextPanel);
+                showPanel(0);
+            }
+
+            /* Extra credit i guess */
+            let mouseStartX = null;
+
+            if (carousel) {
+                carousel.addEventListener("mousedown", function (event) {
+                    mouseStartX = event.clientX;
+                });
+
+                carousel.addEventListener("mouseup", function (event) {
+                    if (mouseStartX === null) {
+                        return;
+                    }
+
+                    const swipeDistance = event.clientX - mouseStartX;
+
+                    if (Math.abs(swipeDistance) >= 50) {
+                        if (swipeDistance < 0) {
+                            showNextPanel();
+                        } else {
+                            showPreviousPanel();
+                        }
+                    }
+
+                    mouseStartX = null;
+                });
+
+                carousel.addEventListener("mouseleave", function () {
+                    mouseStartX = null;
+                });
+            }
+    </script>
+
+    <style>
+        /*
+            UCID: mrc82
+            Date: 2026-06-22
+
+            CSS Planning:
+            - Make the page fill the viewport with the navigation and header at the top.
+            - Center the Previous and Next buttons in their own control row.
+            - Let the carousel fill all remaining width and height.
+            - Make each panel fill the carousel and center its content vertically and horizontally.
+            - Display only the active panel.
+        */
+
+            .challenge3 {
+                height: 100vh;
+                height: 100dvh;
+                display: grid;
+                grid-template-rows: auto auto auto minmax(0, 1fr);
+                overflow: hidden;
+            }
+
+            .challenge3 > nav:last-of-type {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .challenge3 .carousel {
+                width: 100%;
+                min-height: 0;
+                overflow: hidden;
+                cursor: grab;
+                user-select: none;
+            }
+
+            .challenge3 .carousel:active {
+                cursor: grabbing;
+            }
+
+            .challenge3 .carousel-container {
+                width: 100%;
+                height: 100%;
+            }
+
+            .challenge3 .panel {
+                display: none;
+                width: 100%;
+                height: 100%;
+                box-sizing: border-box;
+                overflow: auto;
+            }
+
+            .challenge3 .panel.active {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .challenge3 .panel > div {
+                margin: auto;
+                padding: 1rem;
+            }
+    </style>
+</body>
+
+</html>
