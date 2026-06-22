@@ -126,6 +126,70 @@ Notes:
             - Compare the horizontal distance to determine the swipe direction.
             - Reuse the same previous and next carousel functions used by the buttons.
         */
+
+            const carousel = document.querySelector(".challenge3 .carousel");
+            const panels = document.querySelectorAll(".challenge3 .panel");
+            const carouselButtons = document.querySelectorAll(
+                ".challenge3 > nav:last-of-type button"
+            );
+
+            const previousButton = carouselButtons[0];
+            const nextButton = carouselButtons[1];
+
+            let currentIndex = 0;
+
+            function showPanel(index) {
+                currentIndex = (index + panels.length) % panels.length;
+
+                panels.forEach(function (panel, panelIndex) {
+                    panel.classList.toggle("active", panelIndex === currentIndex);
+                });
+            }
+
+            function showPreviousPanel() {
+                showPanel(currentIndex - 1);
+            }
+
+            function showNextPanel() {
+                showPanel(currentIndex + 1);
+            }
+
+            if (previousButton && nextButton && panels.length > 0) {
+                previousButton.addEventListener("click", showPreviousPanel);
+                nextButton.addEventListener("click", showNextPanel);
+                showPanel(0);
+            }
+
+            /* Extra credit i guess */
+            let mouseStartX = null;
+
+            if (carousel) {
+                carousel.addEventListener("mousedown", function (event) {
+                    mouseStartX = event.clientX;
+                });
+
+                carousel.addEventListener("mouseup", function (event) {
+                    if (mouseStartX === null) {
+                        return;
+                    }
+
+                    const swipeDistance = event.clientX - mouseStartX;
+
+                    if (Math.abs(swipeDistance) >= 50) {
+                        if (swipeDistance < 0) {
+                            showNextPanel();
+                        } else {
+                            showPreviousPanel();
+                        }
+                    }
+
+                    mouseStartX = null;
+                });
+
+                carousel.addEventListener("mouseleave", function () {
+                    mouseStartX = null;
+                });
+            }
     </script>
 
     <style>
@@ -140,6 +204,57 @@ Notes:
             - Make each panel fill the carousel and center its content vertically and horizontally.
             - Display only the active panel.
         */
+
+            .challenge3 {
+                height: 100vh;
+                height: 100dvh;
+                display: grid;
+                grid-template-rows: auto auto auto minmax(0, 1fr);
+                overflow: hidden;
+            }
+
+            .challenge3 > nav:last-of-type {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .challenge3 .carousel {
+                width: 100%;
+                min-height: 0;
+                overflow: hidden;
+                cursor: grab;
+                user-select: none;
+            }
+
+            .challenge3 .carousel:active {
+                cursor: grabbing;
+            }
+
+            .challenge3 .carousel-container {
+                width: 100%;
+                height: 100%;
+            }
+
+            .challenge3 .panel {
+                display: none;
+                width: 100%;
+                height: 100%;
+                box-sizing: border-box;
+                overflow: auto;
+            }
+
+            .challenge3 .panel.active {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .challenge3 .panel > div {
+                margin: auto;
+                padding: 1rem;
+            }
     </style>
 </body>
 
