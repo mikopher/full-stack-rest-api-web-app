@@ -12,6 +12,12 @@ if (isset($_POST["id"])) {
     Add an extra clause to update only if the complete field of the record is not set.
     https://phpdelusions.net/pdo
     */
+
+    // mrc82 - 06/30/2026
+    // Plan: validate the submitted todo ID before using it.
+    // Update only that todo with a named placeholder, mark it complete,
+    // set the completed date to today, and ignore records already completed.
+
     $query = ""; // edit this
     $params = []; // apply mapping
     
@@ -35,6 +41,10 @@ For Actions, this isn't part of the query and there's nothing special to select 
 Filter the results where the todo item is NOT completed and order the results by those due the soonest.
 No limit is required.
 */
+// mrc82 - 06/30/2026
+// Plan: select id, task, due, days_offset, and assigned.
+// Show only incomplete todos and order them by the soonest due date.
+// Future dates should have a positive offset and overdue dates a negative offset.
 $query = ""; // edit this
 $results = [];
 try {
