@@ -18,7 +18,10 @@ if (empty($diff)) {
     // When not valid, provide a user-friendly message of what specifically was wrong and set $is_valid to false.
     // Assigned should check for "self" if a valid format/value isn't provided.
     // Start validations
-    // can edit here
+    // mrc82 - 06/29/2026
+    // Plan: validate task as required text up to 128 characters,
+    // validate due as a real YYYY-MM-DD date,
+    // and use self when assigned is empty or invalid.
     // End validations
 
     
@@ -28,6 +31,7 @@ if (empty($diff)) {
         Ensure valid and proper PDO named placeholders are used.
         https://phpdelusions.net/pdo
         */
+        // Plan: insert task, due, and assigned using PDO named placeholders.
         $query = ""; // edit this
         $params = []; // Apply the proper PDO placeholder to variable mapping here
         try {
@@ -41,6 +45,8 @@ if (empty($diff)) {
             }
         } catch (PDOException $e) {
             // extra credit
+            // Plan: detect the duplicate task and due unique constraint
+            // and show a friendly message instead of the raw database error.
             // check if the exception was related to a unique constraint
             // provide an appropriate user-friendly message for this scenario
             // Otherwise show the default message below
@@ -60,8 +66,11 @@ if (empty($diff)) {
         <h2>Create ToDo </h2>
         <form>
             <!-- design the form with proper labels and input fields with the correct types based on the SQL table.
-             Wrap each label/input pair in a div tag.
-             For "Assigned" ensure the default value is "self". -->
+            Wrap each label/input pair in a div tag.
+            For "Assigned" ensure the default value is "self".
+            mrc82 - 06/29/2026
+            Plan: use text, date, and text inputs that match the SQL columns.
+            Assigned will display self as its default value. -->
           
             <div>
                 <input type="submit" />

@@ -19,7 +19,7 @@ function echo_url($dest)
 <br>
 <header>
     <!-- change UCID -->
-    <span>mt85</span>
+    <span>mrc82</span>
     &nbsp;|&nbsp;
     <?php
     date_default_timezone_set('America/New_York');
