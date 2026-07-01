@@ -11,6 +11,12 @@ For the Status part, you'll need to calculate the "days_offset" from the complet
 Filter the results where the todo item is completed and order the results by most recently completed and most recently due.
 No limit is required.
 */
+
+// mrc82 - 06/30/2026
+// Plan: select id, task, due, the date part of completed,
+// days_offset, and assigned in the same order as the table.
+// Show only completed todos and sort by the newest completed date,
+// then by the newest due date.
 $query = ""; // edit this
 $results = [];
 try {
@@ -25,7 +31,7 @@ try {
 }
 ?>
 <html>
-
+             
 <body>
     <?php require_once(__DIR__ . "/../nav.php"); ?>
     <section>
