@@ -17,7 +17,16 @@ No limit is required.
 // days_offset, and assigned in the same order as the table.
 // Show only completed todos and sort by the newest completed date,
 // then by the newest due date.
-$query = ""; // edit this
+$query = "SELECT
+            id,
+            task,
+            due,
+            DATE(completed) AS completed_date,
+            DATEDIFF(due, DATE(completed)) AS days_offset,
+            assigned
+          FROM M4_Todos
+          WHERE is_complete = 1
+          ORDER BY completed DESC, due DESC";
 $results = [];
 try {
     $stmt = $db->prepare($query);
