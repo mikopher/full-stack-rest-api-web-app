@@ -5,35 +5,46 @@ require_once(__DIR__ . "/../../../../lib/db.php"); ?>
 $db = getDB();
 // process complete action
 if (isset($_POST["id"])) {
-    $id = $_POST["id"];
-    /*
-    Create a query that'll update the respective ToDo marking it complete and setting the date for the completed date field as today.
-    Ensure the "id" is utilized using proper PDO named placeholders so that only the one item is updated.
-    Add an extra clause to update only if the complete field of the record is not set.
-    https://phpdelusions.net/pdo
-    */
+    $id = filter_var(
+        $_POST["id"],
+        FILTER_VALIDATE_INT,
+        ["options" => ["min_range" => 1]]
+    );
 
     // mrc82 - 06/30/2026
     // Plan: validate the submitted todo ID before using it.
     // Update only that todo with a named placeholder, mark it complete,
     // set the completed date to today, and ignore records already completed.
 
-    $query = ""; // edit this
-    $params = []; // apply mapping
-    
-    try {
-        $stmt = $db->prepare($query);
-        $r = $stmt->execute($params);
-        if ($r) {
-            echo "Marked task $id as completed";
-        } else {
-            echo "Failed to mark task $id as completed";
+    if ($id === false) {
+        echo "<p>Invalid todo ID.</p>";
+    } else {
+        $query = "UPDATE M4_Todos
+                  SET is_complete = 1,
+                      completed = CURRENT_TIMESTAMP
+                  WHERE id = :id
+                    AND is_complete = 0";
+
+        $params = [
+            ":id" => $id
+        ];
+
+        try {
+            $stmt = $db->prepare($query);
+            $r = $stmt->execute($params);
+
+            if ($r && $stmt->rowCount() === 1) {
+                echo "<p>Marked task $id as completed.</p>";
+            } else {
+                echo "<p>Task was not found or was already completed.</p>";
+            }
+        } catch (PDOException $e) {
+            echo "<p>Error updating task. Please try again.</p>";
+            error_log("Update Error: " . var_export($e, true));
         }
-    } catch (PDOException $e) {
-        echo "Error updating task $id; check the logs (terminal)";
-        error_log("Update Error: " . var_export($e, true)); // shows in the terminal
     }
 }
+
 /* Refer to the HTML table below and build a query that'll select the columns in the same order as the table from the Todo table.
 Cross-reference the HTML table columns with what'd most plausibly match the SQL table aside from the notes below.
 For the Status part, you'll need to calculate the "days_offset" from the due date, ensure the virtual column matches "days_offset".
@@ -45,7 +56,15 @@ No limit is required.
 // Plan: select id, task, due, days_offset, and assigned.
 // Show only incomplete todos and order them by the soonest due date.
 // Future dates should have a positive offset and overdue dates a negative offset.
-$query = ""; // edit this
+$query = "SELECT
+            id,
+            task,
+            due,
+            DATEDIFF(due, CURDATE()) AS days_offset,
+            assigned
+          FROM M4_Todos
+          WHERE is_complete = 0
+          ORDER BY due ASC";
 $results = [];
 try {
     $stmt = $db->prepare($query);
