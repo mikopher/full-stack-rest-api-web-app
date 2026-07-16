@@ -52,6 +52,19 @@ function processCars($cars, $arrayNumber) {
     // Calculate the car's age by subtracting its year from the current year.
     // Mark the car as classic when its age is at least $classic_age.
     // Keep the original properties and add age and isClassic.
+
+    $currentYear = (int) date("Y");
+
+    foreach ($cars as $car) {
+        $age = $currentYear - $car["year"];
+
+        $processedCar = $car;
+        $processedCar["age"] = $age;
+        $processedCar["isClassic"] = $age >= $classic_age;
+
+        $processedCars[] = $processedCar;
+    }
+
     // End Solution Edits
     printProblemOutput("New properties output:", $processedCars);
     echo "</div>";
