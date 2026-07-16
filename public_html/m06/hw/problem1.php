@@ -3,7 +3,7 @@
 // @ts-nocheck
 require_once(__DIR__ . "/base.php");
 
-$ucid = "YOUR_UCID_HERE"; // <-- set your UCID
+$ucid = "mrc82"; // <-- set your UCID
 
 // Don't edit the arrays below, they are used to test your code.
 $a1 = [
@@ -42,7 +42,10 @@ function processBirds($birds, $arrayNumber) {
 
     $subset = [];
     // Start Solution Edits
-
+    // mrc82 - 2026-07-16
+    // Loop through each bird in the $birds parameter.
+    // Create a new row containing only its name, color, and region.
+    // Add each new row to the $subset array.
     // End Solution Edits
     printProblemOutput("Subset output:", $subset);
     echo "</div>";
