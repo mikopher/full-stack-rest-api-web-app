@@ -46,6 +46,15 @@ function processBirds($birds, $arrayNumber) {
     // Loop through each bird in the $birds parameter.
     // Create a new row containing only its name, color, and region.
     // Add each new row to the $subset array.
+
+    foreach ($birds as $bird) {
+        $subset[] = [
+            "name" => $bird["name"],
+            "color" => $bird["color"],
+            "region" => $bird["region"]
+        ];
+    }
+
     // End Solution Edits
     printProblemOutput("Subset output:", $subset);
     echo "</div>";
