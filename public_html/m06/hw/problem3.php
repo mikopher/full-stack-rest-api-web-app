@@ -67,6 +67,20 @@ function joinArrays($users, $activities, $arrayNumber) {
     // Compare the user's userId with each activity's userId.
     // When the IDs match, combine the user and activity information.
     // Add the combined row to the $joined array.
+
+    foreach ($users as $user) {
+        foreach ($activities as $activity) {
+            if ((string) $user["userId"] === (string) $activity["userId"]) {
+                $joined[] = [
+                    "userId" => $user["userId"],
+                    "name" => $user["name"],
+                    "age" => $user["age"],
+                    "activity" => $activity["activity"]
+                ];
+            }
+        }
+    }
+
     // End Solution Edits
     printProblemOutput("Joined output:", $joined);
     echo "</div>";
