@@ -3,7 +3,7 @@
 // @ts-nocheck
 require_once(__DIR__ . "/base.php");
 
-$ucid = "YOUR_UCID_HERE"; // <-- set your UCID
+$ucid = "mrc82"; // <-- set your UCID
 
 // Don't edit the arrays below, they are used to test your code.
 $a1_users = [
@@ -62,7 +62,11 @@ function joinArrays($users, $activities, $arrayNumber) {
 
     $joined = [];
     // Start Solution Edits
-
+    // mrc82 - 2026-07-16
+    // Loop through each user in the $users parameter.
+    // Compare the user's userId with each activity's userId.
+    // When the IDs match, combine the user and activity information.
+    // Add the combined row to the $joined array.
     // End Solution Edits
     printProblemOutput("Joined output:", $joined);
     echo "</div>";
