@@ -1,6 +1,6 @@
 <?php
-// mrc82 - 2026-07-16
-// Authenticates a registered user and stores safe account details in the session.
+// mrc82 - 2026-07-17
+// Authenticates users and displays login feedback through shared flash messages.
 
 require_once(__DIR__ . "/../../lib/app.php");
 
@@ -49,12 +49,13 @@ if (isset($_POST["email"], $_POST["password"])) {
 
         $_SESSION["user"] = $user;
 
+        flash("Welcome back.", "success");
         header("Location: dashboard.php");
         exit;
     }
-}
 
-$message = implode("<br>", array_map("htmlspecialchars", $errors));
+    flash_errors($errors);
+}
 ?>
 
 <!doctype html>
@@ -69,12 +70,11 @@ $message = implode("<br>", array_map("htmlspecialchars", $errors));
 
     <h1>Login</h1>
 
-    <p id="message"><?php echo $message; ?></p>
-
     <form
         method="post"
         action="login.php"
         onsubmit="return validate(this);"
+        novalidate
     >
         <label for="email">Email</label>
         <input
@@ -101,14 +101,15 @@ $message = implode("<br>", array_map("htmlspecialchars", $errors));
 
     <script>
         function validate(form) {
-            const message = document.getElementById("message");
             const errors = [];
 
             validateEmail(form.email, errors);
             validatePassword(form.password, errors);
 
-            return showValidationErrors(message, errors);
+            return showValidationErrors(errors);
         }
     </script>
+
+    <?php render_flash_messages(); ?>
 </body>
 </html>

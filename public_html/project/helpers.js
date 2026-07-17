@@ -1,6 +1,25 @@
 // mrc82 - 2026-07-17
 // Provides reusable browser-side validation for project account forms.
 
+// Adds a browser-side message to the shared flash area.
+function flash(message = "", color = "info") {
+    const flashArea = document.getElementById("flash");
+
+    if (!flashArea) {
+        return;
+    }
+
+    const outerDiv = document.createElement("div");
+    outerDiv.className = "row justify-content-center";
+
+    const innerDiv = document.createElement("div");
+    innerDiv.className = `alert alert-${color}`;
+    innerDiv.innerText = `(js) ${message}`;
+
+    outerDiv.appendChild(innerDiv);
+    flashArea.appendChild(outerDiv);
+}
+
 function validateEmail(input, errors) {
     if (input.validity.valueMissing) {
         errors.push("Enter your email address.");
@@ -54,7 +73,15 @@ function validatePasswordsMatch(passwordInput, confirmInput, errors) {
     return true;
 }
 
-function showValidationErrors(messageElement, errors) {
-    messageElement.innerHTML = errors.join("<br>");
+function showValidationErrors(errors) {
+    const flashArea = document.getElementById("flash");
+
+    if (!flashArea) {
+        return errors.length === 0;
+    }
+
+    flashArea.innerHTML = "";
+    errors.forEach((error) => flash(error, "danger"));
+
     return errors.length === 0;
 }

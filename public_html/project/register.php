@@ -1,12 +1,11 @@
 <?php
-// mrc82 - 2026-07-16
-// Registers users after HTML, JavaScript, and PHP validation.
+// mrc82 - 2026-07-17
+// Registers users and displays validation results through shared flash messages.
 
 require_once(__DIR__ . "/../../lib/app.php");
 
 $errors = [];
 $email = "";
-$success = "";
 
 if (isset($_POST["email"], $_POST["password"], $_POST["confirm_password"])) {
     $email = sanitize_email($_POST["email"]);
@@ -37,8 +36,9 @@ if (isset($_POST["email"], $_POST["password"], $_POST["confirm_password"])) {
                 . $db->lastInsertId()
             );
 
-            $success = "Registration saved.";
-            $email = "";
+            flash("Account created. Please log in.", "success");
+            header("Location: login.php");
+            exit;
         } catch (PDOException $e) {
             if ($e->getCode() === "23000") {
                 $errors[] = "That email is already registered.";
@@ -48,6 +48,8 @@ if (isset($_POST["email"], $_POST["password"], $_POST["confirm_password"])) {
             }
         }
     }
+
+    flash_errors($errors);
 }
 ?>
 
@@ -59,24 +61,15 @@ if (isset($_POST["email"], $_POST["password"], $_POST["confirm_password"])) {
     <title>Register</title>
 </head>
 <body>
+    <?php render_nav(); ?>
+
     <h1>Register</h1>
-
-    <p id="form-message">
-        <?php echo htmlspecialchars($success); ?>
-    </p>
-
-    <?php if (!empty($errors)): ?>
-        <ul>
-            <?php foreach ($errors as $error): ?>
-                <li><?php echo htmlspecialchars($error); ?></li>
-            <?php endforeach; ?>
-        </ul>
-    <?php endif; ?>
 
     <form
         method="post"
         action="register.php"
         onsubmit="return validate(this);"
+        novalidate
     >
         <label for="email">Email</label>
         <input
@@ -113,7 +106,6 @@ if (isset($_POST["email"], $_POST["password"], $_POST["confirm_password"])) {
 
     <script>
         function validate(form) {
-            const message = document.querySelector("#form-message");
             const errors = [];
 
             validateEmail(form.email, errors);
@@ -124,8 +116,10 @@ if (isset($_POST["email"], $_POST["password"], $_POST["confirm_password"])) {
                 errors
             );
 
-            return showValidationErrors(message, errors);
+            return showValidationErrors(errors);
         }
     </script>
+
+    <?php render_flash_messages(); ?>
 </body>
 </html>

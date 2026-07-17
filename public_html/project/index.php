@@ -17,7 +17,7 @@ require_once(__DIR__ . "/../../lib/app.php");
 
     <main>
         <h1>Welcome to Michos's IT202 Project</h1>
-        <p>Summer 2026 account management project.</p>
+        <p class="project-description">Summer 2026 account management project.</p>
     </main>
 </body>
 </html>
