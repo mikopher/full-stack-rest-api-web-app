@@ -1,14 +1,20 @@
 <?php
 // mrc82 - 2026-07-16
-// Displays navigation links based on the current login session.
+// Loads shared project assets and displays links based on login state.
 ?>
 
-<nav>
-    <a href="/project/register.php">Register</a>
-    <a href="/project/login.php">Login</a>
+<link rel="stylesheet" href="/project/styles.css">
 
-    <?php if (isset($_SESSION["user"])): ?>
+<nav>
+    <a href="/project/index.php">Home</a>
+
+    <?php if (is_logged_in()): ?>
         <a href="/project/dashboard.php">Dashboard</a>
         <a href="/project/logout.php">Logout</a>
+    <?php else: ?>
+        <a href="/project/register.php">Register</a>
+        <a href="/project/login.php">Login</a>
     <?php endif; ?>
 </nav>
+
+<script src="/project/helpers.js"></script>

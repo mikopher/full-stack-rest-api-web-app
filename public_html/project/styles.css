@@ -1,0 +1,74 @@
+/* mrc82 - 2026-07-17
+   Shared custom styling for Milestone 1 project pages. */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 30px;
+    font-family: Arial, sans-serif;
+    color: #1f2937;
+    background: #f3f4f6;
+}
+
+nav {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 28px;
+    padding: 14px 18px;
+    border-radius: 8px;
+    background: #0f172a;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+}
+
+nav a:hover {
+    color: #93c5fd;
+}
+
+h1 {
+    color: #0f172a;
+}
+
+form {
+    display: grid;
+    gap: 12px;
+    max-width: 480px;
+    padding: 24px;
+    border-radius: 10px;
+    background: white;
+    box-shadow: 0 4px 14px rgb(0 0 0 / 10%);
+}
+
+input,
+button {
+    width: 100%;
+    padding: 10px;
+    font: inherit;
+}
+
+button {
+    border: 0;
+    border-radius: 6px;
+    color: white;
+    background: #2563eb;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #1d4ed8;
+}
+
+#message,
+#form-message {
+    color: #b91c1c;
+}
+
+ul {
+    color: #b91c1c;
+}

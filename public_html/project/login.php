@@ -9,18 +9,11 @@ $email = "";
 $user = false;
 
 if (isset($_POST["email"], $_POST["password"])) {
-    $email = filter_var(trim($_POST["email"]), FILTER_SANITIZE_EMAIL);
+    $email = sanitize_email($_POST["email"]);
     $password = $_POST["password"];
 
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $errors[] = "Enter a valid email address.";
-    }
-
-    if ($password === "") {
-        $errors[] = "Enter your password.";
-    } elseif (strlen($password) < 8) {
-        $errors[] = "Password must be at least 8 characters.";
-    }
+    validate_email($email, $errors);
+    validate_password($password, $errors);
 
     if (empty($errors)) {
         try {
@@ -108,22 +101,13 @@ $message = implode("<br>", array_map("htmlspecialchars", $errors));
 
     <script>
         function validate(form) {
+            const message = document.getElementById("message");
             const errors = [];
 
-            if (!form.email.validity.valid) {
-                errors.push("Enter a valid email address.");
-            }
+            validateEmail(form.email, errors);
+            validatePassword(form.password, errors);
 
-            if (form.password.validity.valueMissing) {
-                errors.push("Enter your password.");
-            } else if (form.password.validity.tooShort) {
-                errors.push("Password must be at least 8 characters.");
-            }
-
-            document.getElementById("message").innerHTML =
-                errors.join("<br>");
-
-            return errors.length === 0;
+            return showValidationErrors(message, errors);
         }
     </script>
 </body>

@@ -4,12 +4,11 @@
 
 require_once(__DIR__ . "/../../lib/app.php");
 
-if (!isset($_SESSION["user"])) {
+if (!is_logged_in()) {
     header("Location: login.php");
     exit;
 }
 
-$currentUser = $_SESSION["user"];
 ?>
 
 <!doctype html>
@@ -26,7 +25,7 @@ $currentUser = $_SESSION["user"];
 
     <p>
         Welcome,
-        <?php echo htmlspecialchars($currentUser["email"]); ?>
+        <?php echo htmlspecialchars(get_user_email()); ?>
     </p>
 </body>
 </html>
