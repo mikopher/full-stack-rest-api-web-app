@@ -9,4 +9,5 @@ require_once(__DIR__ . "/render_functions.php");
 require_once(__DIR__ . "/validations.php");
 require_once(__DIR__ . "/user_helpers.php");
 require_once(__DIR__ . "/flash_messages.php");
+require_once(__DIR__ . "/duplicate_user_details.php");
 ?>

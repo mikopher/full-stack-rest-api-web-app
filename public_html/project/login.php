@@ -1,6 +1,6 @@
 <?php
 // mrc82 - 2026-07-17
-// Authenticates users and displays login feedback through shared flash messages.
+// Authenticates users and stores safe profile details in the session.
 
 require_once(__DIR__ . "/../../lib/app.php");
 
@@ -20,7 +20,11 @@ if (isset($_POST["email"], $_POST["password"])) {
             $db = getDB();
 
             $stmt = $db->prepare(
-                "SELECT id AS user_id, email, password_hash
+                "SELECT
+                    id AS user_id,
+                    username,
+                    email,
+                    password_hash
                  FROM Users
                  WHERE email = :email
                  LIMIT 1"
@@ -28,8 +32,8 @@ if (isset($_POST["email"], $_POST["password"])) {
 
             $stmt->execute([":email" => $email]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            error_log("Login query failed: " . $e->getMessage());
+        } catch (PDOException $exception) {
+            error_log("Login query failed: " . $exception->getMessage());
             $errors[] = "Login failed. Please try again.";
         }
     }

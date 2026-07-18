@@ -1,17 +1,27 @@
 <?php
 // mrc82 - 2026-07-17
-// Registers users and displays validation results through shared flash messages.
+// Registers users with a unique username and email.
 
 require_once(__DIR__ . "/../../lib/app.php");
 
 $errors = [];
+$username = "";
 $email = "";
 
-if (isset($_POST["email"], $_POST["password"], $_POST["confirm_password"])) {
+if (
+    isset(
+        $_POST["username"],
+        $_POST["email"],
+        $_POST["password"],
+        $_POST["confirm_password"]
+    )
+) {
+    $username = trim($_POST["username"]);
     $email = sanitize_email($_POST["email"]);
     $password = $_POST["password"];
     $confirmPassword = $_POST["confirm_password"];
 
+    validate_username($username, $errors);
     validate_email($email, $errors);
     validate_password($password, $errors);
     validate_passwords_match($password, $confirmPassword, $errors);
@@ -22,11 +32,12 @@ if (isset($_POST["email"], $_POST["password"], $_POST["confirm_password"])) {
             $hash = password_hash($password, PASSWORD_BCRYPT);
 
             $stmt = $db->prepare(
-                "INSERT INTO Users (email, password_hash)
-                 VALUES (:email, :password_hash)"
+                "INSERT INTO Users (username, email, password_hash)
+                 VALUES (:username, :email, :password_hash)"
             );
 
             $stmt->execute([
+                ":username" => $username,
                 ":email" => $email,
                 ":password_hash" => $hash,
             ]);
@@ -39,13 +50,8 @@ if (isset($_POST["email"], $_POST["password"], $_POST["confirm_password"])) {
             flash("Account created. Please log in.", "success");
             header("Location: login.php");
             exit;
-        } catch (PDOException $e) {
-            if ($e->getCode() === "23000") {
-                $errors[] = "That email is already registered.";
-            } else {
-                error_log("Registration failed: " . $e->getMessage());
-                $errors[] = "Registration failed. Please try again.";
-            }
+        } catch (PDOException $exception) {
+            handle_duplicate_user_details($exception, $errors);
         }
     }
 
@@ -71,6 +77,19 @@ if (isset($_POST["email"], $_POST["password"], $_POST["confirm_password"])) {
         onsubmit="return validate(this);"
         novalidate
     >
+        <label for="username">Username</label>
+        <input
+            id="username"
+            name="username"
+            type="text"
+            required
+            minlength="3"
+            maxlength="30"
+            pattern="[a-z0-9_-]{3,30}"
+            autocomplete="username"
+            value="<?php echo htmlspecialchars($username); ?>"
+        >
+
         <label for="email">Email</label>
         <input
             id="email"
@@ -108,6 +127,7 @@ if (isset($_POST["email"], $_POST["password"], $_POST["confirm_password"])) {
         function validate(form) {
             const errors = [];
 
+            validateUsername(form.username, errors);
             validateEmail(form.email, errors);
             validatePassword(form.password, errors);
             validatePasswordsMatch(

@@ -1,5 +1,5 @@
 <?php
-// mrc82 - 2026-07-16
+// mrc82 - 2026-07-17
 // Loads shared project assets and displays links based on login state.
 ?>
 
@@ -10,6 +10,7 @@
 
     <?php if (is_logged_in()): ?>
         <a href="/project/dashboard.php">Dashboard</a>
+        <a href="/project/profile.php">Profile</a>
         <a href="/project/logout.php">Logout</a>
     <?php else: ?>
         <a href="/project/register.php">Register</a>
