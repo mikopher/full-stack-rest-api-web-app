@@ -51,6 +51,7 @@ if (isset($_POST["email"], $_POST["password"])) {
         $user["user_id"] = (int)$user["user_id"];
         unset($user["password_hash"]);
 
+        $user["roles"] = get_user_roles($user["user_id"]);
         $_SESSION["user"] = $user;
 
         flash("Welcome back.", "success");
