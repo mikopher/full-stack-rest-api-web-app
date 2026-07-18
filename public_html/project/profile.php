@@ -1,5 +1,5 @@
 <?php
-// mrc82 - 2026-07-17
+// mrc82 - 2026-07-18
 // Lets the logged-in user update profile details and their password.
 
 require_once(__DIR__ . "/../../lib/app.php");
@@ -77,9 +77,10 @@ if (
         }
     }
 
+    $user["username"] = $username;
+    $user["email"] = $email;
+
     flash_errors($errors);
-    header("Location: profile.php");
-    exit;
 }
 
 if (
