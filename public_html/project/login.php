@@ -5,14 +5,20 @@
 require_once(__DIR__ . "/../../lib/app.php");
 
 $errors = [];
-$email = "";
+$identifier = "";
 $user = false;
 
-if (isset($_POST["email"], $_POST["password"])) {
-    $email = sanitize_email($_POST["email"]);
+if (isset($_POST["identifier"], $_POST["password"])) {
+    $identifier = trim($_POST["identifier"]);
     $password = $_POST["password"];
 
-    validate_email($email, $errors);
+    if (str_contains($identifier, "@")) {
+        $identifier = sanitize_email($identifier);
+        validate_email($identifier, $errors);
+    } else {
+        validate_username($identifier, $errors);
+    }
+
     validate_password($password, $errors);
 
     if (empty($errors)) {
@@ -26,11 +32,12 @@ if (isset($_POST["email"], $_POST["password"])) {
                     email,
                     password_hash
                  FROM Users
-                 WHERE email = :email
+                 WHERE email = :identifier
+                    OR username = :identifier
                  LIMIT 1"
             );
 
-            $stmt->execute([":email" => $email]);
+            $stmt->execute([":identifier" => $identifier]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $exception) {
             error_log("Login query failed: " . $exception->getMessage());
@@ -42,7 +49,7 @@ if (isset($_POST["email"], $_POST["password"])) {
         empty($errors)
         && (!$user || !password_verify($password, $user["password_hash"]))
     ) {
-        $errors[] = "Invalid email or password.";
+        $errors[] = "Invalid login credentials.";
     }
 
     if (empty($errors)) {
@@ -81,14 +88,16 @@ if (isset($_POST["email"], $_POST["password"])) {
         onsubmit="return validate(this);"
         novalidate
     >
-        <label for="email">Email</label>
+        <label for="identifier">Email or Username</label>
         <input
-            id="email"
-            name="email"
-            type="email"
+            type="text"
+            id="identifier"
+            name="identifier"
             required
-            autocomplete="email"
-            value="<?php echo htmlspecialchars($email); ?>"
+            autocomplete="username"
+            pattern="(?:[a-z0-9_\-]{3,30}|[^@\s]+@[^@\s]+\.[^@\s]+)"
+            title="Enter a username or email address"
+            value="<?php echo htmlspecialchars($identifier); ?>"
         >
 
         <label for="password">Password</label>
@@ -108,7 +117,11 @@ if (isset($_POST["email"], $_POST["password"])) {
         function validate(form) {
             const errors = [];
 
-            validateEmail(form.email, errors);
+            if (form.identifier.value.includes("@")) {
+                validateEmail(form.identifier, errors);
+            } else {
+                validateUsername(form.identifier, errors);
+            }
             validatePassword(form.password, errors);
 
             return showValidationErrors(errors);

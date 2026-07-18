@@ -25,7 +25,7 @@ if (!is_logged_in()) {
 
     <p class="dashboard-welcome">
         Welcome,
-        <?php echo htmlspecialchars(get_user_email()); ?>
+        <?php echo htmlspecialchars(get_user_username()); ?>
     </p>
 
     <?php render_flash_messages(); ?>
