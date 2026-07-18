@@ -1,0 +1,12 @@
+CREATE TABLE IF NOT EXISTS UserRoles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    role_id INT NOT NULL,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE (user_id, role_id),
+    FOREIGN KEY (user_id) REFERENCES Users(id),
+    FOREIGN KEY (role_id) REFERENCES Roles(id)
+);

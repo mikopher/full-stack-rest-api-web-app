@@ -1,0 +1,119 @@
+/* mrc82 - 2026-07-17
+   Shared custom styling for Milestone 1 project pages. */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 30px;
+    font-family: Arial, sans-serif;
+    color: #1f2937;
+    background: #f3f4f6;
+}
+
+nav {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 28px;
+    padding: 14px 18px;
+    border-radius: 8px;
+    background: #0f172a;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+}
+
+nav a:hover {
+    color: #93c5fd;
+}
+
+h1 {
+    color: #0f172a;
+    text-align: center;
+}
+
+form {
+    display: grid;
+    gap: 12px;
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 24px;
+    border-radius: 10px;
+    background: white;
+    box-shadow: 0 4px 14px rgb(0 0 0 / 10%);
+}
+
+input,
+button {
+    width: 100%;
+    padding: 10px;
+    font: inherit;
+}
+
+button {
+    border: 0;
+    border-radius: 6px;
+    color: white;
+    background: #2563eb;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #1d4ed8;
+}
+
+#message,
+#form-message {
+    color: #b91c1c;
+}
+
+ul {
+    color: #b91c1c;
+}
+
+/* Shared flash-message styles. */
+.alert {
+    min-width: 280px;
+    margin-bottom: 10px;
+    padding: 12px 16px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    text-align: center;
+}
+
+.alert-success {
+    color: #14532d;
+    border-color: #86efac;
+    background: #dcfce7;
+}
+
+.alert-danger {
+    color: #7f1d1d;
+    border-color: #fca5a5;
+    background: #fee2e2;
+}
+
+.alert-warning {
+    color: #713f12;
+    border-color: #fde047;
+    background: #fef9c3;
+}
+
+.alert-info {
+    color: #1e3a8a;
+    border-color: #93c5fd;
+    background: #dbeafe;
+}
+
+.project-description {
+    text-align: center;
+}
+
+.dashboard-welcome {
+    text-align: center;
+}
