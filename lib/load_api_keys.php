@@ -2,7 +2,8 @@
 // lib/load_api_keys.php
 // String array of environment keys to look up.
 
-$env_keys = ["STOCK_API_KEY", "STOCK_API_HOST"];
+// Rick and Morty API does not require an API key or host secret.
+$env_keys = [];
 $ini_path = __DIR__ . "/.env";
 $ini = [];
 
