@@ -1,6 +1,8 @@
 <?php
-// mrc82 - 2026-07-17
-// Registers users with a unique username and email.
+// UCID: mrc82
+// Date: 2026-08-03
+// Summary: Registers users through a reusable Bootstrap form while
+// enforcing unique usernames, emails, and secure password storage.
 
 require_once(__DIR__ . "/../../lib/app.php");
 
@@ -8,50 +10,74 @@ $errors = [];
 $username = "";
 $email = "";
 
-if (
-    isset(
-        $_POST["username"],
-        $_POST["email"],
-        $_POST["password"],
-        $_POST["confirm_password"]
-    )
-) {
-    $username = trim($_POST["username"]);
-    $email = sanitize_email($_POST["email"]);
-    $password = $_POST["password"];
-    $confirmPassword = $_POST["confirm_password"];
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $username = trim((string) ($_POST["username"] ?? ""));
+    $email = sanitize_email(
+        (string) ($_POST["email"] ?? "")
+    );
+
+    $password = (string) ($_POST["password"] ?? "");
+    $confirm_password = (string) (
+        $_POST["confirm_password"] ?? ""
+    );
 
     validate_username($username, $errors);
     validate_email($email, $errors);
     validate_password($password, $errors);
-    validate_passwords_match($password, $confirmPassword, $errors);
+
+    validate_passwords_match(
+        $password,
+        $confirm_password,
+        $errors
+    );
 
     if (empty($errors)) {
         try {
             $db = getDB();
-            $hash = password_hash($password, PASSWORD_BCRYPT);
+
+            $password_hash = password_hash(
+                $password,
+                PASSWORD_BCRYPT
+            );
 
             $stmt = $db->prepare(
-                "INSERT INTO Users (username, email, password_hash)
-                 VALUES (:username, :email, :password_hash)"
+                "INSERT INTO Users (
+                    username,
+                    email,
+                    password_hash
+                )
+                VALUES (
+                    :username,
+                    :email,
+                    :password_hash
+                )"
             );
 
             $stmt->execute([
                 ":username" => $username,
                 ":email" => $email,
-                ":password_hash" => $hash,
+                ":password_hash" => $password_hash,
             ]);
 
             error_log(
-                "Registration insert succeeded for user id "
-                . $db->lastInsertId()
+                "Registration succeeded for user ID " .
+                $db->lastInsertId()
             );
 
-            flash("Account created. Please log in.", "success");
-            header("Location: login.php");
+            flash(
+                "Account created successfully. Please log in.",
+                "success"
+            );
+
+            header(
+                "Location: " . project_url("login.php")
+            );
             exit;
         } catch (PDOException $exception) {
-            handle_duplicate_user_details($exception, $errors);
+            handle_duplicate_user_details(
+                $exception,
+                $errors
+            );
         }
     }
 
@@ -62,66 +88,140 @@ if (
 <!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register</title>
+    <?php render_head("Create Account"); ?>
 </head>
+
 <body>
     <?php render_nav(); ?>
 
-    <h1>Register</h1>
+    <main class="container py-5">
+        <?php render_flash_messages(); ?>
 
-    <form
-        method="post"
-        action="register.php"
-        onsubmit="return validate(this);"
-        novalidate
-    >
-        <label for="username">Username</label>
-        <input
-            id="username"
-            name="username"
-            type="text"
-            required
-            minlength="3"
-            maxlength="30"
-            pattern="[a-z0-9_-]{3,30}"
-            autocomplete="username"
-            value="<?php echo htmlspecialchars($username); ?>"
-        >
+        <div class="row justify-content-center">
+            <div class="col-md-9 col-lg-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4 p-lg-5">
+                        <div class="text-center mb-4">
+                            <h1 class="h2">Create Your Account</h1>
 
-        <label for="email">Email</label>
-        <input
-            id="email"
-            name="email"
-            type="email"
-            required
-            autocomplete="email"
-            value="<?php echo htmlspecialchars($email); ?>"
-        >
+                            <p class="text-body-secondary mb-0">
+                                Register to access the dashboard and
+                                character-management features.
+                            </p>
+                        </div>
 
-        <label for="password">Password</label>
-        <input
-            id="password"
-            name="password"
-            type="password"
-            required
-            minlength="8"
-            autocomplete="new-password"
-        >
+                        <form
+                            method="post"
+                            action="<?php
+                                echo htmlspecialchars(
+                                    project_url("register.php")
+                                );
+                            ?>"
+                            onsubmit="return validate(this);"
+                            novalidate
+                        >
+                            <?php
+                            render_input([
+                                "type" => "text",
+                                "name" => "username",
+                                "id" => "username",
+                                "label" => "Username",
+                                "value" => $username,
+                                "attributes" => [
+                                    "required" => true,
+                                    "minlength" => 3,
+                                    "maxlength" => 30,
+                                    "pattern" =>
+                                        "[a-z0-9_-]{3,30}",
+                                    "autocomplete" => "username",
+                                    "placeholder" =>
+                                        "Choose a username",
+                                    "title" =>
+                                        "Use 3–30 lowercase letters, " .
+                                        "numbers, underscores, or hyphens",
+                                ],
+                            ]);
 
-        <label for="confirm_password">Confirm Password</label>
-        <input
-            id="confirm_password"
-            name="confirm_password"
-            type="password"
-            required
-            minlength="8"
-            autocomplete="new-password"
-        >
+                            render_input([
+                                "type" => "email",
+                                "name" => "email",
+                                "id" => "email",
+                                "label" => "Email",
+                                "value" => $email,
+                                "attributes" => [
+                                    "required" => true,
+                                    "autocomplete" => "email",
+                                    "placeholder" =>
+                                        "Enter your email address",
+                                ],
+                            ]);
 
-        <button type="submit">Register</button>
-    </form>
+                            render_input([
+                                "type" => "password",
+                                "name" => "password",
+                                "id" => "password",
+                                "label" => "Password",
+                                "attributes" => [
+                                    "required" => true,
+                                    "minlength" => 8,
+                                    "autocomplete" =>
+                                        "new-password",
+                                    "placeholder" =>
+                                        "Create a password",
+                                ],
+                            ]);
+
+                            render_input([
+                                "type" => "password",
+                                "name" => "confirm_password",
+                                "id" => "confirm_password",
+                                "label" => "Confirm Password",
+                                "attributes" => [
+                                    "required" => true,
+                                    "minlength" => 8,
+                                    "autocomplete" =>
+                                        "new-password",
+                                    "placeholder" =>
+                                        "Enter the password again",
+                                ],
+                            ]);
+                            ?>
+
+                            <div class="d-grid">
+                                <?php
+                                render_button([
+                                    "text" => "Create Account",
+                                    "variant" => "success",
+                                    "attributes" => [
+                                        "class" => "btn-lg",
+                                    ],
+                                ]);
+                                ?>
+                            </div>
+                        </form>
+
+                        <hr class="my-4">
+
+                        <p class="text-center mb-0">
+                            Already have an account?
+
+                            <a
+                                href="<?php
+                                    echo htmlspecialchars(
+                                        project_url("login.php")
+                                    );
+                                ?>"
+                            >
+                                Log in
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <?php render_scripts(); ?>
 
     <script>
         function validate(form) {
@@ -130,6 +230,7 @@ if (
             validateUsername(form.username, errors);
             validateEmail(form.email, errors);
             validatePassword(form.password, errors);
+
             validatePasswordsMatch(
                 form.password,
                 form.confirm_password,
@@ -139,7 +240,5 @@ if (
             return showValidationErrors(errors);
         }
     </script>
-
-    <?php render_flash_messages(); ?>
 </body>
 </html>
