@@ -1,19 +1,26 @@
 <?php
-// mrc82 - 2026-07-18
-// Lets the logged-in user update profile details and their password.
+// UCID: mrc82
+// Date: 2026-08-03
+// Summary: Allows authenticated users to update account details
+// and securely change their password.
 
 require_once(__DIR__ . "/../../lib/app.php");
 
 if (!is_logged_in()) {
     flash("Please log in first.", "warning");
-    header("Location: login.php");
+
+    header(
+        "Location: " . project_url("login.php")
+    );
     exit;
 }
 
-$userId = get_user_id();
-$db = getDB();
+$user_id = get_user_id();
+$errors = [];
 
 try {
+    $db = getDB();
+
     $stmt = $db->prepare(
         "SELECT
             id AS user_id,
@@ -25,243 +32,444 @@ try {
          LIMIT 1"
     );
 
-    $stmt->execute([":user_id" => $userId]);
+    $stmt->execute([
+        ":user_id" => $user_id,
+    ]);
+
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 } catch (PDOException $exception) {
-    error_log("Profile lookup failed: " . $exception->getMessage());
+    error_log(
+        "Profile lookup failed: " .
+        $exception->getMessage()
+    );
+
     $user = false;
 }
 
 if (!$user) {
     unset($_SESSION["user"]);
-    flash("Please log in again.", "warning");
-    header("Location: login.php");
-    exit;
-}
 
-$errors = [];
-
-if (
-    isset($_POST["action"], $_POST["username"], $_POST["email"])
-    && $_POST["action"] === "details"
-) {
-    $username = trim($_POST["username"]);
-    $email = sanitize_email($_POST["email"]);
-
-    validate_username($username, $errors);
-    validate_email($email, $errors);
-
-    if (empty($errors)) {
-        try {
-            $stmt = $db->prepare(
-                "UPDATE Users
-                 SET username = :username,
-                     email = :email
-                 WHERE id = :user_id"
-            );
-
-            $stmt->execute([
-                ":username" => $username,
-                ":email" => $email,
-                ":user_id" => $userId,
-            ]);
-
-            $_SESSION["user"]["username"] = $username;
-            $_SESSION["user"]["email"] = $email;
-
-            flash("Profile details updated.", "success");
-            header("Location: profile.php");
-            exit;
-        } catch (PDOException $exception) {
-            handle_duplicate_user_details($exception, $errors);
-        }
-    }
-
-    $user["username"] = $username;
-    $user["email"] = $email;
-
-    flash_errors($errors);
-}
-
-if (
-    isset(
-        $_POST["action"],
-        $_POST["current_password"],
-        $_POST["new_password"],
-        $_POST["confirm_password"]
-    )
-    && $_POST["action"] === "password"
-) {
-    $currentPassword = $_POST["current_password"];
-    $newPassword = $_POST["new_password"];
-    $confirmPassword = $_POST["confirm_password"];
-
-    validate_password($currentPassword, $errors);
-
-    if (
-        empty($errors)
-        && !password_verify($currentPassword, $user["password_hash"])
-    ) {
-        $errors[] = "Current password is incorrect.";
-    }
-
-    validate_password($newPassword, $errors);
-    validate_passwords_match(
-        $newPassword,
-        $confirmPassword,
-        $errors
+    flash(
+        "Your account could not be loaded. Please log in again.",
+        "warning"
     );
 
-    if (empty($errors)) {
-        try {
-            $newHash = password_hash($newPassword, PASSWORD_BCRYPT);
-
-            $stmt = $db->prepare(
-                "UPDATE Users
-                 SET password_hash = :password_hash
-                 WHERE id = :user_id"
-            );
-
-            $stmt->execute([
-                ":password_hash" => $newHash,
-                ":user_id" => $userId,
-            ]);
-
-            flash("Password updated.", "success");
-            header("Location: profile.php");
-            exit;
-        } catch (PDOException $exception) {
-            error_log(
-                "Password update failed: "
-                . $exception->getMessage()
-            );
-
-            $errors[] = "Password could not be updated.";
-        }
-    }
-
-    flash_errors($errors);
-    header("Location: profile.php");
+    header(
+        "Location: " . project_url("login.php")
+    );
     exit;
 }
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $action = (string) ($_POST["action"] ?? "");
+
+    /*
+     * Update username and email.
+     */
+    if ($action === "details") {
+        $username = trim(
+            (string) ($_POST["username"] ?? "")
+        );
+
+        $email = sanitize_email(
+            (string) ($_POST["email"] ?? "")
+        );
+
+        validate_username($username, $errors);
+        validate_email($email, $errors);
+
+        if (empty($errors)) {
+            try {
+                $stmt = $db->prepare(
+                    "UPDATE Users
+                     SET username = :username,
+                         email = :email
+                     WHERE id = :user_id"
+                );
+
+                $stmt->execute([
+                    ":username" => $username,
+                    ":email" => $email,
+                    ":user_id" => $user_id,
+                ]);
+
+                $_SESSION["user"]["username"] = $username;
+                $_SESSION["user"]["email"] = $email;
+
+                flash(
+                    "Profile details updated successfully.",
+                    "success"
+                );
+
+                header(
+                    "Location: " . project_url("profile.php")
+                );
+                exit;
+            } catch (PDOException $exception) {
+                handle_duplicate_user_details(
+                    $exception,
+                    $errors
+                );
+            }
+        }
+
+        $user["username"] = $username;
+        $user["email"] = $email;
+
+        flash_errors($errors);
+    }
+
+    /*
+     * Update account password.
+     */
+    elseif ($action === "password") {
+        $current_password = (string) (
+            $_POST["current_password"] ?? ""
+        );
+
+        $new_password = (string) (
+            $_POST["new_password"] ?? ""
+        );
+
+        $confirm_password = (string) (
+            $_POST["confirm_password"] ?? ""
+        );
+
+        validate_password(
+            $current_password,
+            $errors
+        );
+
+        if (
+            empty($errors) &&
+            !password_verify(
+                $current_password,
+                $user["password_hash"]
+            )
+        ) {
+            $errors[] = "Current password is incorrect.";
+        }
+
+        validate_password(
+            $new_password,
+            $errors
+        );
+
+        validate_passwords_match(
+            $new_password,
+            $confirm_password,
+            $errors
+        );
+
+        if (
+            empty($errors) &&
+            password_verify(
+                $new_password,
+                $user["password_hash"]
+            )
+        ) {
+            $errors[] =
+                "The new password must be different from your current password.";
+        }
+
+        if (empty($errors)) {
+            try {
+                $new_hash = password_hash(
+                    $new_password,
+                    PASSWORD_BCRYPT
+                );
+
+                $stmt = $db->prepare(
+                    "UPDATE Users
+                     SET password_hash = :password_hash
+                     WHERE id = :user_id"
+                );
+
+                $stmt->execute([
+                    ":password_hash" => $new_hash,
+                    ":user_id" => $user_id,
+                ]);
+
+                flash(
+                    "Password updated successfully.",
+                    "success"
+                );
+
+                header(
+                    "Location: " . project_url("profile.php")
+                );
+                exit;
+            } catch (PDOException $exception) {
+                error_log(
+                    "Password update failed: " .
+                    $exception->getMessage()
+                );
+
+                $errors[] =
+                    "The password could not be updated right now.";
+            }
+        }
+
+        flash_errors($errors);
+
+        header(
+            "Location: " . project_url("profile.php")
+        );
+        exit;
+    }
+
+    else {
+        flash(
+            "Choose a valid profile action.",
+            "danger"
+        );
+
+        header(
+            "Location: " . project_url("profile.php")
+        );
+        exit;
+    }
+}
+
+$is_admin = has_role("Admin");
 ?>
 
 <!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile</title>
+    <?php render_head("Profile"); ?>
 </head>
+
 <body>
     <?php render_nav(); ?>
 
-    <h1>Profile</h1>
+    <main class="container py-5">
+        <?php render_flash_messages(); ?>
 
-    <form
-        method="post"
-        action="profile.php"
-        onsubmit="return validate(this);"
-        novalidate
-    >
-        <input type="hidden" name="action" value="details">
+        <div class="mb-4">
+            <h1>Your Profile</h1>
 
-        <h2>Account Details</h2>
+            <p class="text-body-secondary mb-0">
+                Manage your account information and password.
+            </p>
+        </div>
 
-        <label for="username">Username</label>
-        <input
-            id="username"
-            name="username"
-            type="text"
-            required
-            minlength="3"
-            maxlength="30"
-            pattern="[a-z0-9_-]{3,30}"
-            autocomplete="username"
-            value="<?php echo htmlspecialchars($user["username"]); ?>"
-        >
+        <div class="row g-4">
+            <section class="col-lg-6">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body p-4">
+                        <div
+                            class="d-flex flex-wrap justify-content-between
+                                   align-items-center gap-2 mb-4"
+                        >
+                            <div>
+                                <h2 class="h4 card-title mb-1">
+                                    Account Details
+                                </h2>
 
-        <label for="email">Email</label>
-        <input
-            id="email"
-            name="email"
-            type="email"
-            required
-            autocomplete="email"
-            value="<?php echo htmlspecialchars($user["email"]); ?>"
-        >
+                                <p class="text-body-secondary mb-0">
+                                    Update your username or email address.
+                                </p>
+                            </div>
 
-        <button type="submit">Update Profile</button>
-    </form>
+                            <?php if ($is_admin): ?>
+                                <span class="badge text-bg-warning">
+                                    Admin
+                                </span>
+                            <?php else: ?>
+                                <span class="badge text-bg-secondary">
+                                    User
+                                </span>
+                            <?php endif; ?>
+                        </div>
 
-    <br>
+                        <form
+                            method="post"
+                            action="<?php
+                                echo htmlspecialchars(
+                                    project_url("profile.php")
+                                );
+                            ?>"
+                            onsubmit="return validateProfileDetails(this);"
+                            novalidate
+                        >
+                            <input
+                                type="hidden"
+                                name="action"
+                                value="details"
+                            >
 
-    <form
-        method="post"
-        action="profile.php"
-        onsubmit="return validate(this);"
-        novalidate
-    >
-        <input type="hidden" name="action" value="password">
+                            <?php
+                            render_input([
+                                "type" => "text",
+                                "name" => "username",
+                                "id" => "username",
+                                "label" => "Username",
+                                "value" => $user["username"],
+                                "attributes" => [
+                                    "required" => true,
+                                    "minlength" => 3,
+                                    "maxlength" => 30,
+                                    "pattern" =>
+                                        "[a-z0-9_-]{3,30}",
+                                    "autocomplete" => "username",
+                                    "title" =>
+                                        "Use 3–30 lowercase letters, " .
+                                        "numbers, underscores, or hyphens",
+                                ],
+                            ]);
 
-        <h2>Change Password</h2>
+                            render_input([
+                                "type" => "email",
+                                "name" => "email",
+                                "id" => "email",
+                                "label" => "Email",
+                                "value" => $user["email"],
+                                "attributes" => [
+                                    "required" => true,
+                                    "autocomplete" => "email",
+                                ],
+                            ]);
+                            ?>
 
-        <label for="current_password">Current Password</label>
-        <input
-            id="current_password"
-            name="current_password"
-            type="password"
-            required
-            minlength="8"
-            autocomplete="current-password"
-        >
+                            <div class="d-grid">
+                                <?php
+                                render_button([
+                                    "text" => "Update Profile",
+                                    "variant" => "primary",
+                                    "attributes" => [
+                                        "class" => "btn-lg",
+                                    ],
+                                ]);
+                                ?>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
 
-        <label for="new_password">New Password</label>
-        <input
-            id="new_password"
-            name="new_password"
-            type="password"
-            required
-            minlength="8"
-            autocomplete="new-password"
-        >
+            <section class="col-lg-6">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="mb-4">
+                            <h2 class="h4 card-title mb-1">
+                                Change Password
+                            </h2>
 
-        <label for="confirm_password">Confirm New Password</label>
-        <input
-            id="confirm_password"
-            name="confirm_password"
-            type="password"
-            required
-            minlength="8"
-            autocomplete="new-password"
-        >
+                            <p class="text-body-secondary mb-0">
+                                Confirm your current password before
+                                choosing a new one.
+                            </p>
+                        </div>
 
-        <button type="submit">Update Password</button>
-    </form>
+                        <form
+                            method="post"
+                            action="<?php
+                                echo htmlspecialchars(
+                                    project_url("profile.php")
+                                );
+                            ?>"
+                            onsubmit="return validatePasswordForm(this);"
+                            novalidate
+                        >
+                            <input
+                                type="hidden"
+                                name="action"
+                                value="password"
+                            >
+
+                            <?php
+                            render_input([
+                                "type" => "password",
+                                "name" => "current_password",
+                                "id" => "current_password",
+                                "label" => "Current Password",
+                                "attributes" => [
+                                    "required" => true,
+                                    "minlength" => 8,
+                                    "autocomplete" =>
+                                        "current-password",
+                                ],
+                            ]);
+
+                            render_input([
+                                "type" => "password",
+                                "name" => "new_password",
+                                "id" => "new_password",
+                                "label" => "New Password",
+                                "attributes" => [
+                                    "required" => true,
+                                    "minlength" => 8,
+                                    "autocomplete" =>
+                                        "new-password",
+                                ],
+                            ]);
+
+                            render_input([
+                                "type" => "password",
+                                "name" => "confirm_password",
+                                "id" => "confirm_password",
+                                "label" => "Confirm New Password",
+                                "attributes" => [
+                                    "required" => true,
+                                    "minlength" => 8,
+                                    "autocomplete" =>
+                                        "new-password",
+                                ],
+                            ]);
+                            ?>
+
+                            <div class="d-grid">
+                                <?php
+                                render_button([
+                                    "text" => "Update Password",
+                                    "variant" => "warning",
+                                    "attributes" => [
+                                        "class" => "btn-lg",
+                                    ],
+                                ]);
+                                ?>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <?php render_scripts(); ?>
 
     <script>
-        function validate(form) {
+        function validateProfileDetails(form) {
             const errors = [];
 
-            if (form.action.value === "details") {
-                validateUsername(form.username, errors);
-                validateEmail(form.email, errors);
-            }
+            validateUsername(form.username, errors);
+            validateEmail(form.email, errors);
 
-            if (form.action.value === "password") {
-                validatePassword(form.current_password, errors);
-                validatePassword(form.new_password, errors);
-                validatePasswordsMatch(
-                    form.new_password,
-                    form.confirm_password,
-                    errors
-                );
-            }
+            return showValidationErrors(errors);
+        }
+
+        function validatePasswordForm(form) {
+            const errors = [];
+
+            validatePassword(
+                form.current_password,
+                errors
+            );
+
+            validatePassword(
+                form.new_password,
+                errors
+            );
+
+            validatePasswordsMatch(
+                form.new_password,
+                form.confirm_password,
+                errors
+            );
 
             return showValidationErrors(errors);
         }
     </script>
-
-    <?php render_flash_messages(); ?>
 </body>
 </html>

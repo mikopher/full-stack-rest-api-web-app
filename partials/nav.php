@@ -1,8 +1,8 @@
 <?php
 // UCID: mrc82
-// Date: 2026-08-02
-// Summary: Displays a responsive Bootstrap navigation bar based on login state
-// and Admin authorization.
+// Date: 2026-08-03
+// Summary: Displays a responsive Bootstrap navigation bar based on login
+// state and Admin authorization.
 
 $is_logged_in = is_logged_in();
 $is_admin = $is_logged_in && has_role("Admin");
@@ -12,7 +12,11 @@ $is_admin = $is_logged_in && has_role("Admin");
     <div class="container">
         <a
             class="navbar-brand"
-            href="<?php echo htmlspecialchars(project_url("index.php")); ?>"
+            href="<?php
+                echo htmlspecialchars(
+                    project_url("index.php")
+                );
+            ?>"
         >
             mrc82's Rick and Morty Project
         </a>
@@ -34,9 +38,26 @@ $is_admin = $is_logged_in && has_role("Admin");
                 <li class="nav-item">
                     <a
                         class="nav-link"
-                        href="<?php echo htmlspecialchars(project_url("index.php")); ?>"
+                        href="<?php
+                            echo htmlspecialchars(
+                                project_url("index.php")
+                            );
+                        ?>"
                     >
                         Home
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a
+                        class="nav-link"
+                        href="<?php
+                            echo htmlspecialchars(
+                                project_url("characters.php")
+                            );
+                        ?>"
+                    >
+                        Characters
                     </a>
                 </li>
             </ul>
@@ -46,7 +67,11 @@ $is_admin = $is_logged_in && has_role("Admin");
                     <li class="nav-item">
                         <a
                             class="nav-link"
-                            href="<?php echo htmlspecialchars(project_url("dashboard.php")); ?>"
+                            href="<?php
+                                echo htmlspecialchars(
+                                    project_url("dashboard.php")
+                                );
+                            ?>"
                         >
                             Dashboard
                         </a>
@@ -55,7 +80,11 @@ $is_admin = $is_logged_in && has_role("Admin");
                     <li class="nav-item">
                         <a
                             class="nav-link"
-                            href="<?php echo htmlspecialchars(project_url("profile.php")); ?>"
+                            href="<?php
+                                echo htmlspecialchars(
+                                    project_url("profile.php")
+                                );
+                            ?>"
                         >
                             Profile
                         </a>
@@ -65,7 +94,11 @@ $is_admin = $is_logged_in && has_role("Admin");
                         <li class="nav-item">
                             <a
                                 class="nav-link"
-                                href="<?php echo htmlspecialchars(project_url("admin.php")); ?>"
+                                href="<?php
+                                    echo htmlspecialchars(
+                                        project_url("admin.php")
+                                    );
+                                ?>"
                             >
                                 Admin
                             </a>
@@ -75,7 +108,11 @@ $is_admin = $is_logged_in && has_role("Admin");
                     <li class="nav-item">
                         <a
                             class="nav-link"
-                            href="<?php echo htmlspecialchars(project_url("logout.php")); ?>"
+                            href="<?php
+                                echo htmlspecialchars(
+                                    project_url("logout.php")
+                                );
+                            ?>"
                         >
                             Logout
                         </a>
@@ -84,7 +121,11 @@ $is_admin = $is_logged_in && has_role("Admin");
                     <li class="nav-item">
                         <a
                             class="nav-link"
-                            href="<?php echo htmlspecialchars(project_url("register.php")); ?>"
+                            href="<?php
+                                echo htmlspecialchars(
+                                    project_url("register.php")
+                                );
+                            ?>"
                         >
                             Register
                         </a>
@@ -93,7 +134,11 @@ $is_admin = $is_logged_in && has_role("Admin");
                     <li class="nav-item">
                         <a
                             class="nav-link"
-                            href="<?php echo htmlspecialchars(project_url("login.php")); ?>"
+                            href="<?php
+                                echo htmlspecialchars(
+                                    project_url("login.php")
+                                );
+                            ?>"
                         >
                             Login
                         </a>
