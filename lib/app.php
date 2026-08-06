@@ -5,6 +5,7 @@
 session_start();
 
 require_once(__DIR__ . "/db.php");
+require_once(__DIR__ . "/db_helpers.php");
 require_once(__DIR__ . "/render_functions.php");
 require_once(__DIR__ . "/url_helpers.php");
 require_once(__DIR__ . "/validations.php");
