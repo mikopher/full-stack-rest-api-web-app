@@ -358,13 +358,12 @@ $actions = [
                         Character Records
                     </h2>
 
-                    <span class="badge text-bg-secondary">
-                        Showing <?php echo $shown_count; ?> of
-                        <?php echo $matching_count; ?> matching
-                        result<?php
-                            echo $matching_count === 1 ? "" : "s";
-                        ?>
-                    </span>
+                    <?php
+                    render_result_summary(
+                        $shown_count,
+                        $matching_count
+                    );
+                    ?>
                 </div>
 
                 <?php

@@ -85,4 +85,13 @@ function render_table(
 ): void {
     require(__DIR__ . "/../partials/table.php");
 }
+/**
+ * Renders the current displayed count compared with all filtered matches.
+ */
+function render_result_summary(
+    int $shown_count,
+    int $matching_count
+): void {
+    require(__DIR__ . "/../partials/result_summary.php");
+}
 ?>

@@ -43,10 +43,6 @@ $matching_count = 0;
 $characters = [];
 
 try {
-    /*
-     * The count query measures all matching records before the
-     * selected display limit is applied.
-     */
     $count_row = select(
         "SELECT COUNT(*) AS total
          FROM Characters
@@ -57,10 +53,6 @@ try {
 
     $matching_count = (int) ($count_row["total"] ?? 0);
 
-    /*
-     * The list query returns only the selected number of records.
-     * The validated ORDER BY value comes from the trusted sort list.
-     */
     $list_params = array_merge(
         $params,
         [
@@ -319,13 +311,12 @@ $actions = [
                         Character Records
                     </h2>
 
-                    <span class="badge text-bg-secondary">
-                        Showing <?php echo $shown_count; ?> of
-                        <?php echo $matching_count; ?> matching
-                        result<?php
-                            echo $matching_count === 1 ? "" : "s";
-                        ?>
-                    </span>
+                    <?php
+                    render_result_summary(
+                        $shown_count,
+                        $matching_count
+                    );
+                    ?>
                 </div>
 
                 <?php
