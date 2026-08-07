@@ -1,22 +1,97 @@
 <?php
 // UCID: mrc82
-// Date: 2026-08-03
-// Summary: Displays a public, filterable list of character records.
+// Date: 2026-08-06
+// Summary: Displays a public character list using shared validated filters,
+// trusted sorting, result limits, and matching-result counts.
 
 require_once(__DIR__ . "/../../lib/app.php");
 
 $errors = [];
 
-$filters = [
-    "name" => trim((string) ($_GET["name"] ?? "")),
-    "species" => trim((string) ($_GET["species"] ?? "")),
-    "source" => trim((string) ($_GET["source"] ?? "")),
-    "sort" => trim((string) ($_GET["sort"] ?? "name_asc")),
-    "limit" => $_GET["limit"] ?? 10,
+$sort_options = [
+    "modified" => "Recently Updated",
+    "name" => "Name",
+    "created" => "Date Created",
+    "status" => "Status",
+    "species" => "Species",
 ];
 
+$list_config = [
+    "filters" => character_filter_rules(),
+    "sort_columns" => array_keys($sort_options),
+];
+
+$list_state = build_list_query_state($_GET, $list_config);
+
+$filters = $list_state["filters"];
+$sort = $list_state["sort"];
+$direction = $list_state["direction"];
+$order_by = $list_state["order_by"];
+$limit = $list_state["limit"];
+
+$filter_query = build_character_filter_query($filters);
+
+$where = "";
+
+if ($filter_query["sql"] !== "") {
+    $where = "WHERE " . $filter_query["sql"];
+}
+
+$params = $filter_query["params"];
+
+$matching_count = 0;
+$characters = [];
+
 try {
-    $characters = get_characters($filters);
+    /*
+     * The count query measures all matching records before the
+     * selected display limit is applied.
+     */
+    $count_row = select(
+        "SELECT COUNT(*) AS total
+         FROM Characters
+         $where
+         LIMIT 1",
+        $params
+    );
+
+    $matching_count = (int) ($count_row["total"] ?? 0);
+
+    /*
+     * The list query returns only the selected number of records.
+     * The validated ORDER BY value comes from the trusted sort list.
+     */
+    $list_params = array_merge(
+        $params,
+        [
+            "limit" => $limit,
+        ]
+    );
+
+    $characters = selectAll(
+        "SELECT
+            id,
+            api_id,
+            name,
+            status,
+            species,
+            gender,
+            origin_name,
+            location_name,
+            image_url,
+            is_api,
+            created,
+            modified,
+            CASE
+                WHEN is_api = 1 THEN 'API'
+                ELSE 'Manual'
+            END AS source
+         FROM Characters
+         $where
+         ORDER BY $order_by, id ASC
+         LIMIT :limit",
+        $list_params
+    );
 } catch (Throwable $e) {
     error_log(
         "Public character list failed: " .
@@ -24,14 +99,11 @@ try {
     );
 
     $characters = [];
-    $errors[] = "Character records could not be loaded right now.";
+    $errors[] =
+        "Character records could not be loaded right now.";
 }
 
-foreach ($characters as &$character) {
-    $character["source"] =
-        !empty($character["is_api"]) ? "API" : "Manual";
-}
-unset($character);
+$shown_count = count($characters);
 
 $columns = [
     "name" => "Name",
@@ -47,9 +119,9 @@ $actions = [
         "variant" => "primary",
         "method" => "get",
         "url" => function (array $row): string {
-            return project_url("character.php") .
-                "?id=" .
-                rawurlencode((string) $row["id"]);
+            return project_url("character.php")
+                . "?id="
+                . rawurlencode((string) $row["id"]);
         },
     ],
 ];
@@ -125,6 +197,23 @@ $actions = [
                         <div class="col-md-6 col-lg-4">
                             <?php
                             render_input([
+                                "type" => "select",
+                                "name" => "status",
+                                "label" => "Status",
+                                "value" => $filters["status"],
+                                "options" => [
+                                    "" => "All statuses",
+                                    "Alive" => "Alive",
+                                    "Dead" => "Dead",
+                                    "unknown" => "Unknown",
+                                ],
+                            ]);
+                            ?>
+                        </div>
+
+                        <div class="col-md-6 col-lg-4">
+                            <?php
+                            render_input([
                                 "type" => "text",
                                 "name" => "species",
                                 "label" => "Species contains",
@@ -158,13 +247,23 @@ $actions = [
                             render_input([
                                 "type" => "select",
                                 "name" => "sort",
-                                "label" => "Sort order",
-                                "value" => $filters["sort"],
+                                "label" => "Sort by",
+                                "value" => $sort,
+                                "options" => $sort_options,
+                            ]);
+                            ?>
+                        </div>
+
+                        <div class="col-md-6 col-lg-4">
+                            <?php
+                            render_input([
+                                "type" => "select",
+                                "name" => "direction",
+                                "label" => "Sort direction",
+                                "value" => $direction,
                                 "options" => [
-                                    "name_asc" => "Name: A to Z",
-                                    "name_desc" => "Name: Z to A",
-                                    "created_desc" => "Newest first",
-                                    "created_asc" => "Oldest first",
+                                    "asc" => "Ascending",
+                                    "desc" => "Descending",
                                 ],
                             ]);
                             ?>
@@ -176,7 +275,7 @@ $actions = [
                                 "type" => "number",
                                 "name" => "limit",
                                 "label" => "Maximum results",
-                                "value" => (string) $filters["limit"],
+                                "value" => (string) $limit,
                                 "attributes" => [
                                     "min" => 1,
                                     "max" => 100,
@@ -213,17 +312,18 @@ $actions = [
         <section class="card shadow-sm">
             <div class="card-body">
                 <div
-                    class="d-flex justify-content-between
-                           align-items-center mb-3"
+                    class="d-flex flex-wrap justify-content-between
+                           align-items-center gap-2 mb-3"
                 >
                     <h2 class="h4 card-title mb-0">
                         Character Records
                     </h2>
 
                     <span class="badge text-bg-secondary">
-                        <?php echo count($characters); ?>
+                        Showing <?php echo $shown_count; ?> of
+                        <?php echo $matching_count; ?> matching
                         result<?php
-                            echo count($characters) === 1 ? "" : "s";
+                            echo $matching_count === 1 ? "" : "s";
                         ?>
                     </span>
                 </div>

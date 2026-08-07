@@ -514,3 +514,80 @@ function build_list_query_state(
         "limit" => $limit,
     ];
 }
+
+// UCID: mrc82
+// Date: 2026-08-06
+// Summary: Defines the validated filters and prepared SQL conditions shared
+// by public, Admin, personal, and relationship-based character lists.
+
+/**
+ * Returns the filters supported by character list pages.
+ */
+function character_filter_rules(): array
+{
+    return [
+        "name",
+        "species",
+        "status" => [
+            "Alive",
+            "Dead",
+            "unknown",
+        ],
+        "source" => [
+            "api",
+            "manual",
+        ],
+    ];
+}
+
+/**
+ * Builds character filter conditions and prepared-statement parameters.
+ *
+ * The optional prefix safely qualifies columns in joined queries,
+ * such as "c." for the Characters table.
+ */
+function build_character_filter_query(
+    array $filters,
+    string $column_prefix = ""
+): array {
+    $conditions = [];
+    $params = [];
+
+    foreach (["name", "species"] as $name) {
+        if (!empty($filters[$name])) {
+            $column = db_qualified_identifier(
+                $name,
+                $column_prefix
+            );
+
+            $conditions[] = $column . " LIKE :" . $name;
+            $params[$name] = "%" . $filters[$name] . "%";
+        }
+    }
+
+    if (!empty($filters["status"])) {
+        $status_column = db_qualified_identifier(
+            "status",
+            $column_prefix
+        );
+
+        $conditions[] = $status_column . " = :status";
+        $params["status"] = $filters["status"];
+    }
+
+    if (!empty($filters["source"])) {
+        $source_column = db_qualified_identifier(
+            "is_api",
+            $column_prefix
+        );
+
+        $conditions[] = $source_column . " = :source_is_api";
+        $params["source_is_api"] =
+            $filters["source"] === "api" ? 1 : 0;
+    }
+
+    return [
+        "sql" => implode(" AND ", $conditions),
+        "params" => $params,
+    ];
+}
