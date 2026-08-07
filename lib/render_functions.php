@@ -94,4 +94,24 @@ function render_result_summary(
 ): void {
     require(__DIR__ . "/../partials/result_summary.php");
 }
+/**
+ * Renders one character as a reusable card.
+ */
+function render_character_card(
+    array $character,
+    array $options = []
+): void {
+    require(__DIR__ . "/../partials/character_card.php");
+}
+/**
+ * Renders character cards in a responsive grid.
+ */
+function render_character_grid(
+    array $characters,
+    array $card_options = [],
+    string $empty_message =
+        "No characters matched the selected filters."
+): void {
+    require(__DIR__ . "/../partials/character_grid.php");
+}
 ?>

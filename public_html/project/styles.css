@@ -117,3 +117,35 @@ ul {
 .dashboard-welcome {
     text-align: center;
 }
+/* Aligns character-card actions in a compact two-column layout. */
+
+.character-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.character-actions > a,
+.character-actions > form {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+}
+
+.character-actions > form {
+    display: block;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.character-actions .btn,
+.character-actions button {
+    display: block;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0.5rem 0.75rem;
+}
