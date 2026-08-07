@@ -149,3 +149,11 @@ ul {
     margin: 0;
     padding: 0.5rem 0.75rem;
 }
+/* mrc82 - 2026-08-07
+   Centers the View action within character cards. */
+
+.character-actions > a:first-child {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

@@ -1,8 +1,8 @@
 <?php
 // UCID: mrc82
-// Date: 2026-08-03
+// Date: 2026-08-07
 // Summary: Displays a responsive Bootstrap navigation bar based on login
-// state and Admin authorization.
+// state and Admin authorization, including saved-character access.
 
 $is_logged_in = is_logged_in();
 $is_admin = $is_logged_in && has_role("Admin");
@@ -60,6 +60,21 @@ $is_admin = $is_logged_in && has_role("Admin");
                         Characters
                     </a>
                 </li>
+
+                <?php if ($is_logged_in): ?>
+                    <li class="nav-item">
+                        <a
+                            class="nav-link"
+                            href="<?php
+                                echo htmlspecialchars(
+                                    project_url("my_characters.php")
+                                );
+                            ?>"
+                        >
+                            My Saved Characters
+                        </a>
+                    </li>
+                <?php endif; ?>
             </ul>
 
             <ul class="navbar-nav ms-auto">

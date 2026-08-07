@@ -1,8 +1,8 @@
 <?php
 // UCID: mrc82
 // Date: 2026-08-07
-// Summary: Displays character cards in a responsive Bootstrap grid
-// and shows a friendly message when no characters match.
+// Summary: Displays character cards in a responsive centered Bootstrap grid
+// with a comfortable maximum card width.
 
 $card_options = $card_options ?? [];
 $characters = $characters ?? [];
@@ -15,9 +15,9 @@ $empty_message = $empty_message
         <?php echo htmlspecialchars($empty_message); ?>
     </div>
 <?php else: ?>
-    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+    <div class="row g-4 justify-content-center">
         <?php foreach ($characters as $character): ?>
-            <div class="col">
+            <div class="col-12 col-md-6 col-xl-4 character-grid-item">
                 <?php
                 render_character_card(
                     $character,
