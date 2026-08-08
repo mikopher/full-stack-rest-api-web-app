@@ -157,3 +157,18 @@ ul {
     align-items: center;
     justify-content: center;
 }
+/* Milestone 3 association assignment page */
+.association-search-form {
+    max-width: none;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
+.association-search-form .btn {
+    width: 100%;
+    white-space: nowrap;
+}
