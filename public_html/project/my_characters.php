@@ -1,9 +1,8 @@
 <?php
 // UCID: mrc82
 // Date: 2026-08-07
-// Summary: Displays only the currently logged-in user's active saved
-// characters with shared filters, sorting, limits, counts, cards,
-// and an option to remove all saved-character relationships.
+// Summary: Displays the current user's active saved characters with
+// reusable filtering, sorting, counts, pagination, and relationship actions.
 
 require_once(__DIR__ . "/../../lib/app.php");
 
@@ -55,6 +54,17 @@ $direction = $list_state["direction"];
 $order_by = $list_state["order_by"];
 $limit = $list_state["limit"];
 
+/*
+ * Pagination owns only the current page and SQL offset.
+ */
+$pagination_state = build_pagination_query_state(
+    $_GET,
+    $limit
+);
+
+$page = $pagination_state["page"];
+$offset = $pagination_state["offset"];
+
 $filter_query = build_character_filter_query(
     $filters,
     "c."
@@ -79,12 +89,14 @@ $params = array_merge(
 
 $matching_count = 0;
 $saved_total_count = 0;
+$total_pages = 1;
 $characters = [];
 
 try {
     /*
-     * Counts every active saved character belonging to this user,
-     * regardless of the current filters.
+     * Count all active saved characters for the current user.
+     * This count ignores the current filters and controls whether
+     * Remove All Saved Characters should be displayed.
      */
     $saved_total_row = select(
         "SELECT COUNT(*) AS total
@@ -102,7 +114,8 @@ try {
     );
 
     /*
-     * Counts only saved characters matching the active filters.
+     * Count all saved characters matching the active filters.
+     * The count query does not use LIMIT/OFFSET pagination.
      */
     $count_row = select(
         "SELECT COUNT(*) AS total
@@ -118,10 +131,35 @@ try {
         $count_row["total"] ?? 0
     );
 
+    /*
+     * Determine the number of available pages.
+     */
+    $total_pages = pagination_total_pages(
+        $matching_count,
+        $limit
+    );
+
+    /*
+     * If filtering reduced the number of pages, move an
+     * out-of-range request back to the final valid page.
+     */
+    if ($page > $total_pages) {
+        $page = $total_pages;
+
+        $offset = pagination_offset(
+            $page,
+            $limit
+        );
+    }
+
+    /*
+     * LIMIT and OFFSET apply only to the displayed result list.
+     */
     $list_params = array_merge(
         $params,
         [
             "limit" => $limit,
+            "offset" => $offset,
         ]
     );
 
@@ -146,7 +184,7 @@ try {
            ON c.id = uc.character_id
          $where
          ORDER BY $order_by, c.id ASC
-         LIMIT :limit",
+         LIMIT :limit OFFSET :offset",
         $list_params
     );
 } catch (Throwable $e) {
@@ -162,6 +200,18 @@ try {
 }
 
 $shown_count = count($characters);
+
+/*
+ * Build pagination URLs only from already validated list state.
+ */
+$pagination_query = array_merge(
+    $filters,
+    [
+        "sort" => $sort,
+        "direction" => $direction,
+        "limit" => $limit,
+    ]
+);
 ?>
 
 <!doctype html>
@@ -243,7 +293,8 @@ $shown_count = count($characters);
                     >
                         <?php
                         render_button([
-                            "text" => "Remove All Saved Characters",
+                            "text" =>
+                                "Remove All Saved Characters",
                             "variant" => "danger",
                         ]);
                         ?>
@@ -418,6 +469,14 @@ $shown_count = count($characters);
                     "show_saved_on" => true,
                 ],
                 "No saved characters matched the selected filters."
+            );
+            ?>
+
+            <?php
+            render_pagination(
+                $page,
+                $total_pages,
+                $pagination_query
             );
             ?>
         </section>
