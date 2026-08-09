@@ -1,11 +1,12 @@
 <?php
 // UCID: mrc82
-// Date: 2026-08-07
-// Summary: Displays a public character grid with validated filters,
-// trusted sorting, result limits, matching counts, and each logged-in
-// user's current saved-character state.
+// Date: 2026-08-08
+// Summary: Displays characters that currently have no active
+// user-character relationship, with filtering, sorting, and pagination.
 
-require_once(__DIR__ . "/../../lib/app.php");
+require_once(__DIR__ . "/../../../lib/app.php");
+
+require_role("Admin");
 
 $errors = [];
 
@@ -17,10 +18,6 @@ $sort_options = [
     "species" => "Species",
 ];
 
-/*
- * Joined and relationship-aware queries use trusted character-table
- * aliases for their sortable columns.
- */
 $sort_column_map = [
     "modified" => "c.modified",
     "name" => "c.name",
@@ -45,29 +42,50 @@ $direction = $list_state["direction"];
 $order_by = $list_state["order_by"];
 $limit = $list_state["limit"];
 
-/*
- * The c. prefix safely qualifies character columns in both queries.
- */
+$pagination_state = build_pagination_query_state(
+    $_GET,
+    $limit
+);
+
+$page = $pagination_state["page"];
+$offset = $pagination_state["offset"];
+
 $filter_query = build_character_filter_query(
     $filters,
     "c."
 );
 
-$where = "";
-
-if ($filter_query["sql"] !== "") {
-    $where = "WHERE " . $filter_query["sql"];
-}
+$conditions = [
+    "NOT EXISTS (
+        SELECT 1
+        FROM UserCharacters uc
+        WHERE uc.character_id = c.id
+          AND uc.is_active = 1
+    )",
+];
 
 $params = $filter_query["params"];
 
+if ($filter_query["sql"] !== "") {
+    $conditions[] =
+        $filter_query["sql"];
+}
+
+$where =
+    "WHERE "
+    . implode(
+        " AND ",
+        $conditions
+    );
+
 $matching_count = 0;
+$total_pages = 1;
 $characters = [];
 
 try {
     /*
-     * Counts every character matching the current filters before
-     * applying the requested display limit.
+     * Count every character that has no active relationship
+     * while applying the same filters as the list query.
      */
     $count_row = select(
         "SELECT COUNT(*) AS total
@@ -81,70 +99,83 @@ try {
         $count_row["total"] ?? 0
     );
 
+    $total_pages = pagination_total_pages(
+        $matching_count,
+        $limit
+    );
+
     /*
-     * A logged-out visitor uses user ID 0, which will not match a
-     * real user-character relationship.
+     * Clamp invalid high page requests to the final page.
      */
-    $user_id = get_user_id();
+    if ($page > $total_pages) {
+        $page = $total_pages;
+
+        $offset = pagination_offset(
+            $page,
+            $limit
+        );
+    }
 
     $list_params = array_merge(
         $params,
         [
-            "user_id" => $user_id,
             "limit" => $limit,
+            "offset" => $offset,
         ]
     );
 
     /*
-     * EXISTS adds the current user's saved state without changing
-     * or duplicating the character record itself.
+     * The NOT EXISTS condition prevents any character with
+     * an active UserCharacters relationship from appearing.
      */
     $characters = selectAll(
         "SELECT
             c.id,
-            c.api_id,
             c.name,
             c.status,
             c.species,
             c.gender,
-            c.origin_name,
-            c.location_name,
-            c.image_url,
             c.is_api,
             c.created,
             c.modified,
-            EXISTS (
-                SELECT 1
-                FROM UserCharacters uc
-                WHERE uc.character_id = c.id
-                  AND uc.user_id = :user_id
-                  AND uc.is_active = 1
-            ) AS is_saved
+            CASE
+                WHEN c.is_api = 1 THEN 'API'
+                ELSE 'Manual'
+            END AS source
          FROM Characters c
          $where
          ORDER BY $order_by, c.id ASC
-         LIMIT :limit",
+         LIMIT :limit OFFSET :offset",
         $list_params
     );
 } catch (Throwable $e) {
     error_log(
-        "Public character list failed: "
+        "Unassociated character report failed: "
         . $e->getMessage()
     );
 
     $characters = [];
 
     $errors[] =
-        "Character records could not be loaded right now.";
+        "Unassociated characters could not be loaded right now.";
 }
 
 $shown_count = count($characters);
+
+$pagination_query = array_merge(
+    $filters,
+    [
+        "sort" => $sort,
+        "direction" => $direction,
+        "limit" => $limit,
+    ]
+);
 ?>
 
 <!doctype html>
 <html lang="en">
 <head>
-    <?php render_head("Browse Characters"); ?>
+    <?php render_head("Unassociated Characters"); ?>
 </head>
 
 <body>
@@ -175,11 +206,11 @@ $shown_count = count($characters);
                    align-items-center gap-3 mb-4"
         >
             <div>
-                <h1>Browse Characters</h1>
+                <h1>Unassociated Characters</h1>
 
                 <p class="text-body-secondary mb-0">
-                    Explore API-imported and manually created
-                    characters.
+                    View characters that are not currently
+                    saved by any user.
                 </p>
             </div>
 
@@ -187,11 +218,11 @@ $shown_count = count($characters);
                 class="btn btn-outline-secondary"
                 href="<?php
                     echo htmlspecialchars(
-                        project_url("index.php")
+                        project_url("admin.php")
                     );
                 ?>"
             >
-                Back to Home
+                Back to Admin
             </a>
         </div>
 
@@ -203,6 +234,7 @@ $shown_count = count($characters);
 
                 <form method="get">
                     <div class="row g-3">
+
                         <div class="col-md-6 col-lg-4">
                             <?php
                             render_input([
@@ -310,6 +342,7 @@ $shown_count = count($characters);
                             ]);
                             ?>
                         </div>
+
                     </div>
 
                     <div class="d-flex flex-wrap gap-2">
@@ -325,7 +358,8 @@ $shown_count = count($characters);
                             href="<?php
                                 echo htmlspecialchars(
                                     project_url(
-                                        "characters.php"
+                                        "admin/"
+                                        . "unassociated_characters.php"
                                     )
                                 );
                             ?>"
@@ -337,30 +371,154 @@ $shown_count = count($characters);
             </div>
         </section>
 
-        <section>
-            <div
-                class="d-flex flex-wrap justify-content-between
-                       align-items-center gap-2 mb-3"
-            >
-                <h2 class="h4 mb-0">
-                    Character Records
-                </h2>
+        <section class="card shadow-sm">
+            <div class="card-body">
+
+                <div
+                    class="d-flex flex-wrap justify-content-between
+                           align-items-center gap-2 mb-3"
+                >
+                    <h2 class="h4 mb-0">
+                        Unassociated Character Records
+                    </h2>
+
+                    <?php
+                    render_result_summary(
+                        $shown_count,
+                        $matching_count
+                    );
+                    ?>
+                </div>
+
+                <?php if (empty($characters)): ?>
+
+                    <div
+                        class="alert alert-info"
+                        role="status"
+                    >
+                        No unassociated characters matched
+                        the selected filters.
+                    </div>
+
+                <?php else: ?>
+
+                    <div class="table-responsive">
+                        <table
+                            class="table table-striped
+                                   table-hover align-middle"
+                        >
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Species</th>
+                                    <th>Gender</th>
+                                    <th>Source</th>
+                                    <th>Created</th>
+                                    <th>Modified</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <?php foreach ($characters as $character): ?>
+                                    <tr>
+                                        <td>
+                                            <?php
+                                            echo htmlspecialchars(
+                                                (string)
+                                                $character["id"]
+                                            );
+                                            ?>
+                                        </td>
+
+                                        <td>
+                                            <a
+                                                href="<?php
+                                                    echo htmlspecialchars(
+                                                        project_url(
+                                                            "character.php"
+                                                        )
+                                                        . "?id="
+                                                        . rawurlencode(
+                                                            (string)
+                                                            $character["id"]
+                                                        )
+                                                    );
+                                                ?>"
+                                            >
+                                                <?php
+                                                echo htmlspecialchars(
+                                                    $character["name"]
+                                                );
+                                                ?>
+                                            </a>
+                                        </td>
+
+                                        <td>
+                                            <?php
+                                            echo htmlspecialchars(
+                                                $character["status"]
+                                            );
+                                            ?>
+                                        </td>
+
+                                        <td>
+                                            <?php
+                                            echo htmlspecialchars(
+                                                $character["species"]
+                                            );
+                                            ?>
+                                        </td>
+
+                                        <td>
+                                            <?php
+                                            echo htmlspecialchars(
+                                                $character["gender"]
+                                            );
+                                            ?>
+                                        </td>
+
+                                        <td>
+                                            <?php
+                                            echo htmlspecialchars(
+                                                $character["source"]
+                                            );
+                                            ?>
+                                        </td>
+
+                                        <td>
+                                            <?php
+                                            echo htmlspecialchars(
+                                                $character["created"]
+                                            );
+                                            ?>
+                                        </td>
+
+                                        <td>
+                                            <?php
+                                            echo htmlspecialchars(
+                                                $character["modified"]
+                                            );
+                                            ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+
+                <?php endif; ?>
 
                 <?php
-                render_result_summary(
-                    $shown_count,
-                    $matching_count
+                render_pagination(
+                    $page,
+                    $total_pages,
+                    $pagination_query
                 );
                 ?>
-            </div>
 
-            <?php
-            render_character_grid(
-                $characters,
-                [],
-                "No characters matched the selected filters."
-            );
-            ?>
+            </div>
         </section>
     </main>
 

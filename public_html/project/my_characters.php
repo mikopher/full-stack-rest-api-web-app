@@ -1,28 +1,37 @@
 <?php
 // UCID: mrc82
 // Date: 2026-08-07
-// Summary: Displays a public character grid with validated filters,
-// trusted sorting, result limits, matching counts, and each logged-in
-// user's current saved-character state.
+// Summary: Displays the current user's active saved characters with
+// reusable filtering, sorting, counts, pagination, and relationship actions.
 
 require_once(__DIR__ . "/../../lib/app.php");
 
+if (!is_logged_in()) {
+    flash(
+        "Log in to view your saved characters.",
+        "warning"
+    );
+
+    header(
+        "Location: "
+        . project_url("login.php")
+    );
+    exit;
+}
+
 $errors = [];
+$user_id = get_user_id();
 
 $sort_options = [
-    "modified" => "Recently Updated",
+    "modified" => "Date Saved",
     "name" => "Name",
     "created" => "Date Created",
     "status" => "Status",
     "species" => "Species",
 ];
 
-/*
- * Joined and relationship-aware queries use trusted character-table
- * aliases for their sortable columns.
- */
 $sort_column_map = [
-    "modified" => "c.modified",
+    "modified" => "uc.modified",
     "name" => "c.name",
     "created" => "c.created",
     "status" => "c.status",
@@ -46,32 +55,73 @@ $order_by = $list_state["order_by"];
 $limit = $list_state["limit"];
 
 /*
- * The c. prefix safely qualifies character columns in both queries.
+ * Pagination owns only the current page and SQL offset.
  */
+$pagination_state = build_pagination_query_state(
+    $_GET,
+    $limit
+);
+
+$page = $pagination_state["page"];
+$offset = $pagination_state["offset"];
+
 $filter_query = build_character_filter_query(
     $filters,
     "c."
 );
 
-$where = "";
+$where =
+    "WHERE uc.user_id = :user_id
+     AND uc.is_active = 1";
 
 if ($filter_query["sql"] !== "") {
-    $where = "WHERE " . $filter_query["sql"];
+    $where .=
+        " AND "
+        . $filter_query["sql"];
 }
 
-$params = $filter_query["params"];
+$params = array_merge(
+    [
+        "user_id" => $user_id,
+    ],
+    $filter_query["params"]
+);
 
 $matching_count = 0;
+$saved_total_count = 0;
+$total_pages = 1;
 $characters = [];
 
 try {
     /*
-     * Counts every character matching the current filters before
-     * applying the requested display limit.
+     * Count all active saved characters for the current user.
+     * This count ignores the current filters and controls whether
+     * Remove All Saved Characters should be displayed.
+     */
+    $saved_total_row = select(
+        "SELECT COUNT(*) AS total
+         FROM UserCharacters
+         WHERE user_id = :user_id
+           AND is_active = 1
+         LIMIT 1",
+        [
+            "user_id" => $user_id,
+        ]
+    );
+
+    $saved_total_count = (int) (
+        $saved_total_row["total"] ?? 0
+    );
+
+    /*
+     * Count all saved characters matching the active filters.
+     * The count query does not use LIMIT/OFFSET pagination.
      */
     $count_row = select(
         "SELECT COUNT(*) AS total
-         FROM Characters c
+         FROM UserCharacters uc
+         JOIN Characters c
+           ON c.id = uc.character_id
          $where
          LIMIT 1",
         $params
@@ -82,23 +132,37 @@ try {
     );
 
     /*
-     * A logged-out visitor uses user ID 0, which will not match a
-     * real user-character relationship.
+     * Determine the number of available pages.
      */
-    $user_id = get_user_id();
-
-    $list_params = array_merge(
-        $params,
-        [
-            "user_id" => $user_id,
-            "limit" => $limit,
-        ]
+    $total_pages = pagination_total_pages(
+        $matching_count,
+        $limit
     );
 
     /*
-     * EXISTS adds the current user's saved state without changing
-     * or duplicating the character record itself.
+     * If filtering reduced the number of pages, move an
+     * out-of-range request back to the final valid page.
      */
+    if ($page > $total_pages) {
+        $page = $total_pages;
+
+        $offset = pagination_offset(
+            $page,
+            $limit
+        );
+    }
+
+    /*
+     * LIMIT and OFFSET apply only to the displayed result list.
+     */
+    $list_params = array_merge(
+        $params,
+        [
+            "limit" => $limit,
+            "offset" => $offset,
+        ]
+    );
+
     $characters = selectAll(
         "SELECT
             c.id,
@@ -113,38 +177,47 @@ try {
             c.is_api,
             c.created,
             c.modified,
-            EXISTS (
-                SELECT 1
-                FROM UserCharacters uc
-                WHERE uc.character_id = c.id
-                  AND uc.user_id = :user_id
-                  AND uc.is_active = 1
-            ) AS is_saved
-         FROM Characters c
+            1 AS is_saved,
+            uc.modified AS saved_on
+         FROM UserCharacters uc
+         JOIN Characters c
+           ON c.id = uc.character_id
          $where
          ORDER BY $order_by, c.id ASC
-         LIMIT :limit",
+         LIMIT :limit OFFSET :offset",
         $list_params
     );
 } catch (Throwable $e) {
     error_log(
-        "Public character list failed: "
+        "Saved character list failed: "
         . $e->getMessage()
     );
 
     $characters = [];
 
     $errors[] =
-        "Character records could not be loaded right now.";
+        "Saved characters could not be loaded right now.";
 }
 
 $shown_count = count($characters);
+
+/*
+ * Build pagination URLs only from already validated list state.
+ */
+$pagination_query = array_merge(
+    $filters,
+    [
+        "sort" => $sort,
+        "direction" => $direction,
+        "limit" => $limit,
+    ]
+);
 ?>
 
 <!doctype html>
 <html lang="en">
 <head>
-    <?php render_head("Browse Characters"); ?>
+    <?php render_head("My Saved Characters"); ?>
 </head>
 
 <body>
@@ -175,24 +248,59 @@ $shown_count = count($characters);
                    align-items-center gap-3 mb-4"
         >
             <div>
-                <h1>Browse Characters</h1>
+                <h1>My Saved Characters</h1>
 
                 <p class="text-body-secondary mb-0">
-                    Explore API-imported and manually created
-                    characters.
+                    View and manage the characters saved to your account.
                 </p>
             </div>
 
-            <a
-                class="btn btn-outline-secondary"
-                href="<?php
-                    echo htmlspecialchars(
-                        project_url("index.php")
-                    );
-                ?>"
-            >
-                Back to Home
-            </a>
+            <div class="d-flex flex-wrap gap-2">
+                <a
+                    class="btn btn-outline-primary"
+                    href="<?php
+                        echo htmlspecialchars(
+                            project_url("characters.php")
+                        );
+                    ?>"
+                >
+                    Browse Characters
+                </a>
+
+                <?php if ($saved_total_count > 0): ?>
+                    <form
+                        method="post"
+                        action="<?php
+                            echo htmlspecialchars(
+                                project_url(
+                                    "internal/clear_saved_characters.php"
+                                )
+                            );
+                        ?>"
+                        style="
+                            display: inline;
+                            width: auto;
+                            max-width: none;
+                            margin: 0;
+                            padding: 0;
+                            border: 0;
+                            background: transparent;
+                            box-shadow: none;
+                        "
+                        onsubmit="return confirm(
+                            'Remove all saved characters from your account?'
+                        );"
+                    >
+                        <?php
+                        render_button([
+                            "text" =>
+                                "Remove All Saved Characters",
+                            "variant" => "danger",
+                        ]);
+                        ?>
+                    </form>
+                <?php endif; ?>
+            </div>
         </div>
 
         <section class="card shadow-sm mb-4">
@@ -325,7 +433,7 @@ $shown_count = count($characters);
                             href="<?php
                                 echo htmlspecialchars(
                                     project_url(
-                                        "characters.php"
+                                        "my_characters.php"
                                     )
                                 );
                             ?>"
@@ -343,7 +451,7 @@ $shown_count = count($characters);
                        align-items-center gap-2 mb-3"
             >
                 <h2 class="h4 mb-0">
-                    Character Records
+                    Saved Characters
                 </h2>
 
                 <?php
@@ -357,8 +465,18 @@ $shown_count = count($characters);
             <?php
             render_character_grid(
                 $characters,
-                [],
-                "No characters matched the selected filters."
+                [
+                    "show_saved_on" => true,
+                ],
+                "No saved characters matched the selected filters."
+            );
+            ?>
+
+            <?php
+            render_pagination(
+                $page,
+                $total_pages,
+                $pagination_query
             );
             ?>
         </section>

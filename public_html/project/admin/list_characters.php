@@ -1,8 +1,9 @@
 <?php
 // UCID: mrc82
-// Date: 2026-08-03
-// Summary: Displays an Admin-only, filterable and sortable list of
-// manually created and API-imported character records.
+// Date: 2026-08-08
+// Summary: Displays an Admin-only character list using shared validated
+// filters, trusted sorting, result limits, counts, and CSRF-protected
+// management controls.
 
 require_once(__DIR__ . "/../../../lib/app.php");
 
@@ -10,35 +11,102 @@ require_role("Admin");
 
 $errors = [];
 
-$filters = [
-    "name" => trim((string) ($_GET["name"] ?? "")),
-    "status" => trim((string) ($_GET["status"] ?? "")),
-    "species" => trim((string) ($_GET["species"] ?? "")),
-    "source" => trim((string) ($_GET["source"] ?? "")),
-    "sort" => trim((string) ($_GET["sort"] ?? "name_asc")),
-    "limit" => $_GET["limit"] ?? 10,
+$sort_options = [
+    "modified" => "Recently Updated",
+    "name" => "Name",
+    "created" => "Date Created",
+    "status" => "Status",
+    "species" => "Species",
 ];
 
+$list_config = [
+    "filters" => character_filter_rules(),
+    "sort_columns" => array_keys($sort_options),
+];
+
+$list_state = build_list_query_state(
+    $_GET,
+    $list_config
+);
+
+$filters = $list_state["filters"];
+$sort = $list_state["sort"];
+$direction = $list_state["direction"];
+$order_by = $list_state["order_by"];
+$limit = $list_state["limit"];
+
+$filter_query = build_character_filter_query(
+    $filters
+);
+
+$where = "";
+
+if ($filter_query["sql"] !== "") {
+    $where = "WHERE " . $filter_query["sql"];
+}
+
+$params = $filter_query["params"];
+
+$matching_count = 0;
+$characters = [];
+
 try {
-    $characters = get_characters($filters);
+    $count_row = select(
+        "SELECT COUNT(*) AS total
+         FROM Characters
+         $where
+         LIMIT 1",
+        $params
+    );
+
+    $matching_count = (int) (
+        $count_row["total"] ?? 0
+    );
+
+    $list_params = array_merge(
+        $params,
+        [
+            "limit" => $limit,
+        ]
+    );
+
+    $characters = selectAll(
+        "SELECT
+            id,
+            api_id,
+            name,
+            status,
+            species,
+            gender,
+            origin_name,
+            location_name,
+            image_url,
+            is_api,
+            created,
+            modified,
+            CASE
+                WHEN is_api = 1 THEN 'API'
+                ELSE 'Manual'
+            END AS source
+         FROM Characters
+         $where
+         ORDER BY $order_by, id ASC
+         LIMIT :limit",
+        $list_params
+    );
 } catch (Throwable $e) {
     error_log(
-        "Character list failed: " .
-        $e->getMessage()
+        "Admin character list failed: "
+        . $e->getMessage()
     );
 
     $characters = [];
-    $errors[] = "Character records could not be loaded right now.";
+
+    $errors[] =
+        "Character records could not be loaded right now.";
 }
 
-/*
- * Add a user-friendly source label for the reusable table.
- */
-foreach ($characters as &$character) {
-    $character["source"] =
-        !empty($character["is_api"]) ? "API" : "Manual";
-}
-unset($character);
+$shown_count = count($characters);
 
 $columns = [
     "id" => "ID",
@@ -51,22 +119,41 @@ $columns = [
 
 $actions = [
     [
+        "label" => "View",
+        "variant" => "primary",
+        "method" => "get",
+        "url" => function (array $row): string {
+            return project_url("character.php")
+                . "?id="
+                . rawurlencode(
+                    (string) $row["id"]
+                );
+        },
+    ],
+    [
         "label" => "Edit",
         "variant" => "warning",
         "method" => "get",
         "url" => function (array $row): string {
-            return project_url("admin/edit_character.php") .
-                "?id=" .
-                rawurlencode((string) $row["id"]);
+            return project_url(
+                "admin/edit_character.php"
+            )
+                . "?id="
+                . rawurlencode(
+                    (string) $row["id"]
+                );
         },
     ],
     [
         "label" => "Delete",
         "variant" => "danger",
         "method" => "post",
-        "url" => project_url("admin/delete_character.php"),
+        "url" => project_url(
+            "admin/delete_character.php"
+        ),
         "fields" => function (array $row): array {
             return [
+                "csrf_token" => csrf_token(),
                 "id" => $row["id"],
             ];
         },
@@ -91,11 +178,18 @@ $actions = [
         <?php render_flash_messages(); ?>
 
         <?php if (!empty($errors)): ?>
-            <div class="alert alert-danger" role="alert">
+            <div
+                class="alert alert-danger"
+                role="alert"
+            >
                 <ul class="mb-0">
                     <?php foreach ($errors as $error): ?>
                         <li>
-                            <?php echo htmlspecialchars($error); ?>
+                            <?php
+                            echo htmlspecialchars(
+                                $error
+                            );
+                            ?>
                         </li>
                     <?php endforeach; ?>
                 </ul>
@@ -110,7 +204,7 @@ $actions = [
                 <h1>Manage Characters</h1>
 
                 <p class="text-body-secondary mb-0">
-                    Search, filter, sort, edit, and delete character records.
+                    Search, view, edit, and delete character records.
                 </p>
             </div>
 
@@ -132,7 +226,9 @@ $actions = [
                     class="btn btn-outline-secondary"
                     href="<?php
                         echo htmlspecialchars(
-                            project_url("admin.php")
+                            project_url(
+                                "admin.php"
+                            )
                         );
                     ?>"
                 >
@@ -143,11 +239,15 @@ $actions = [
 
         <section class="card shadow-sm mb-4">
             <div class="card-body">
-                <h2 class="h4 card-title">Filters</h2>
+                <h2 class="h4 card-title">
+                    Filters
+                </h2>
 
                 <form method="get">
                     <div class="row g-3">
-                        <div class="col-md-6 col-lg-4">
+                        <div
+                            class="col-md-6 col-lg-4"
+                        >
                             <?php
                             render_input([
                                 "type" => "text",
@@ -163,30 +263,41 @@ $actions = [
                             ?>
                         </div>
 
-                        <div class="col-md-6 col-lg-4">
+                        <div
+                            class="col-md-6 col-lg-4"
+                        >
                             <?php
                             render_input([
                                 "type" => "select",
                                 "name" => "status",
                                 "label" => "Status",
-                                "value" => $filters["status"],
+                                "value" =>
+                                    $filters["status"],
                                 "options" => [
-                                    "" => "All statuses",
-                                    "Alive" => "Alive",
-                                    "Dead" => "Dead",
-                                    "unknown" => "Unknown",
+                                    "" =>
+                                        "All statuses",
+                                    "Alive" =>
+                                        "Alive",
+                                    "Dead" =>
+                                        "Dead",
+                                    "unknown" =>
+                                        "Unknown",
                                 ],
                             ]);
                             ?>
                         </div>
 
-                        <div class="col-md-6 col-lg-4">
+                        <div
+                            class="col-md-6 col-lg-4"
+                        >
                             <?php
                             render_input([
                                 "type" => "text",
                                 "name" => "species",
-                                "label" => "Species contains",
-                                "value" => $filters["species"],
+                                "label" =>
+                                    "Species contains",
+                                "value" =>
+                                    $filters["species"],
                                 "attributes" => [
                                     "maxlength" => 100,
                                     "placeholder" =>
@@ -196,50 +307,75 @@ $actions = [
                             ?>
                         </div>
 
-                        <div class="col-md-6 col-lg-4">
+                        <div
+                            class="col-md-6 col-lg-4"
+                        >
                             <?php
                             render_input([
                                 "type" => "select",
                                 "name" => "source",
-                                "label" => "Record source",
-                                "value" => $filters["source"],
+                                "label" =>
+                                    "Record source",
+                                "value" =>
+                                    $filters["source"],
                                 "options" => [
-                                    "" => "All sources",
-                                    "api" => "API imported",
-                                    "manual" => "Manual",
+                                    "" =>
+                                        "All sources",
+                                    "api" =>
+                                        "API imported",
+                                    "manual" =>
+                                        "Manual",
                                 ],
                             ]);
                             ?>
                         </div>
 
-                        <div class="col-md-6 col-lg-4">
+                        <div
+                            class="col-md-6 col-lg-4"
+                        >
                             <?php
                             render_input([
                                 "type" => "select",
                                 "name" => "sort",
-                                "label" => "Sort order",
-                                "value" => $filters["sort"],
+                                "label" => "Sort by",
+                                "value" => $sort,
+                                "options" =>
+                                    $sort_options,
+                            ]);
+                            ?>
+                        </div>
+
+                        <div
+                            class="col-md-6 col-lg-4"
+                        >
+                            <?php
+                            render_input([
+                                "type" => "select",
+                                "name" => "direction",
+                                "label" =>
+                                    "Sort direction",
+                                "value" => $direction,
                                 "options" => [
-                                    "name_asc" =>
-                                        "Name: A to Z",
-                                    "name_desc" =>
-                                        "Name: Z to A",
-                                    "created_desc" =>
-                                        "Newest first",
-                                    "created_asc" =>
-                                        "Oldest first",
+                                    "asc" =>
+                                        "Ascending",
+                                    "desc" =>
+                                        "Descending",
                                 ],
                             ]);
                             ?>
                         </div>
 
-                        <div class="col-md-6 col-lg-4">
+                        <div
+                            class="col-md-6 col-lg-4"
+                        >
                             <?php
                             render_input([
                                 "type" => "number",
                                 "name" => "limit",
-                                "label" => "Maximum results",
-                                "value" => (string) $filters["limit"],
+                                "label" =>
+                                    "Maximum results",
+                                "value" =>
+                                    (string) $limit,
                                 "attributes" => [
                                     "min" => 1,
                                     "max" => 100,
@@ -250,11 +386,15 @@ $actions = [
                         </div>
                     </div>
 
-                    <div class="d-flex flex-wrap gap-2">
+                    <div
+                        class="d-flex flex-wrap gap-2"
+                    >
                         <?php
                         render_button([
-                            "text" => "Apply Filters",
-                            "variant" => "primary",
+                            "text" =>
+                                "Apply Filters",
+                            "variant" =>
+                                "primary",
                         ]);
                         ?>
 
@@ -278,19 +418,21 @@ $actions = [
         <section class="card shadow-sm">
             <div class="card-body">
                 <div
-                    class="d-flex justify-content-between
-                           align-items-center mb-3"
+                    class="d-flex flex-wrap justify-content-between
+                           align-items-center gap-2 mb-3"
                 >
-                    <h2 class="h4 card-title mb-0">
+                    <h2
+                        class="h4 card-title mb-0"
+                    >
                         Character Records
                     </h2>
 
-                    <span class="badge text-bg-secondary">
-                        <?php echo count($characters); ?>
-                        result<?php
-                            echo count($characters) === 1 ? "" : "s";
-                        ?>
-                    </span>
+                    <?php
+                    render_result_summary(
+                        $shown_count,
+                        $matching_count
+                    );
+                    ?>
                 </div>
 
                 <?php

@@ -85,4 +85,50 @@ function render_table(
 ): void {
     require(__DIR__ . "/../partials/table.php");
 }
+/**
+ * Renders the current displayed count compared with all filtered matches.
+ */
+function render_result_summary(
+    int $shown_count,
+    int $matching_count
+): void {
+    require(__DIR__ . "/../partials/result_summary.php");
+}
+/**
+ * Renders one character as a reusable card.
+ */
+function render_character_card(
+    array $character,
+    array $options = []
+): void {
+    require(__DIR__ . "/../partials/character_card.php");
+}
+/**
+ * Renders character cards in a responsive grid.
+ */
+function render_character_grid(
+    array $characters,
+    array $card_options = [],
+    string $empty_message =
+        "No characters matched the selected filters."
+): void {
+    require(__DIR__ . "/../partials/character_grid.php");
+}
+/**
+ * Renders page controls while preserving the active list values.
+ *
+ * @param int $page Current page number.
+ * @param int $total_pages Number of available pages.
+ * @param array $query_params Active filters, sort choices, and limit.
+ */
+function render_pagination(
+    int $page,
+    int $total_pages,
+    array $query_params = []
+): void {
+    require(
+        __DIR__
+        . "/../partials/pagination.php"
+    );
+}
 ?>
