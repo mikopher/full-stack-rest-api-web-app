@@ -1,12 +1,13 @@
 <?php
 // UCID: mrc82
-// Date: 2026-08-07
+// Date: 2026-08-08
 // Summary: Saves or removes one character for the logged-in user by
-// activating or deactivating the UserCharacters relationship record.
+// activating or deactivating the UserCharacters relationship record
+// with CSRF protection.
 
 require_once(__DIR__ . "/../../../lib/app.php");
 
-/*
+/**
  * Only POST requests are allowed to change relationship data.
  */
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
@@ -14,10 +15,11 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
         "Location: "
         . project_url("characters.php")
     );
+
     exit;
 }
 
-/*
+/**
  * A user must be logged in before saving a character.
  */
 if (!is_logged_in()) {
@@ -30,10 +32,11 @@ if (!is_logged_in()) {
         "Location: "
         . project_url("login.php")
     );
+
     exit;
 }
 
-/*
+/**
  * Return to the same approved project page after the action.
  */
 $return_url = project_url("characters.php");
@@ -65,7 +68,13 @@ if (
     }
 }
 
-/*
+/**
+ * Reject the request before changing any relationship data
+ * when the submitted CSRF token does not match the session.
+ */
+require_csrf_token($return_url);
+
+/**
  * Validate the submitted character ID.
  */
 $character_id = filter_input(
@@ -84,7 +93,7 @@ if (!$character_id || $character_id < 1) {
     exit;
 }
 
-/*
+/**
  * The requested relationship state must be exactly 0 or 1.
  */
 $new_is_saved = filter_input(
@@ -103,13 +112,13 @@ if (!in_array($new_is_saved, [0, 1], true)) {
     exit;
 }
 
-/*
+/**
  * The user ID always comes from the authenticated session.
  */
 $user_id = get_user_id();
 
 try {
-    /*
+    /**
      * Insert a missing user-character pair or update the existing
      * unique pair's is_active value.
      */

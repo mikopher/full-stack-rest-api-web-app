@@ -82,13 +82,19 @@ $image_url = trim(
             |
             <?php
             echo htmlspecialchars(
-                (string) ($character["species"] ?? "Unknown species")
+                (string) (
+                    $character["species"]
+                    ?? "Unknown species"
+                )
             );
             ?>
             |
             <?php
             echo htmlspecialchars(
-                (string) ($character["gender"] ?? "Unknown gender")
+                (string) (
+                    $character["gender"]
+                    ?? "Unknown gender"
+                )
             );
             ?>
         </p>
@@ -168,7 +174,9 @@ $image_url = trim(
                 <a
                     class="btn btn-primary"
                     href="<?php
-                        echo htmlspecialchars($character_url);
+                        echo htmlspecialchars(
+                            $character_url
+                        );
                     ?>"
                 >
                     View
@@ -190,6 +198,8 @@ $image_url = trim(
                     ?>"
                 >
                     <?php
+                    render_csrf_input();
+
                     render_input([
                         "type" => "hidden",
                         "name" => "character_id",
@@ -258,6 +268,8 @@ $image_url = trim(
                     );"
                 >
                     <?php
+                    render_csrf_input();
+
                     render_input([
                         "type" => "hidden",
                         "name" => "id",
@@ -277,7 +289,9 @@ $image_url = trim(
                     class="btn btn-outline-secondary"
                     href="<?php
                         echo htmlspecialchars(
-                            project_url("characters.php")
+                            project_url(
+                                "characters.php"
+                            )
                         );
                     ?>"
                 >
