@@ -18,7 +18,7 @@ $is_admin = $is_logged_in && has_role("Admin");
                 );
             ?>"
         >
-            mrc82's Rick and Morty Project
+            Michos, Rick, & Morty
         </a>
 
         <button
