@@ -15,7 +15,7 @@
 
             <div class="row justify-content-center">
                 <div class="alert alert-<?php echo $color; ?>" role="alert">
-                    (php) <?php echo $text; ?>
+                    <?php echo $text; ?>
                 </div>
             </div>
         <?php endforeach; ?>
