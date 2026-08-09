@@ -1,174 +1,176 @@
 /* mrc82 - 2026-07-17
-   Shared custom styling for Milestone 1 project pages. */
+Shared custom styling for Milestone 1 project pages. */
 
 * {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 body {
-    margin: 0;
-    padding: 30px;
-    font-family: Arial, sans-serif;
-    color: #1f2937;
-    background: #f3f4f6;
+  margin: 0;
+  padding: 30px;
+  font-family: Arial, sans-serif;
+  color: #1f2937;
+  background: #f8fafc;
 }
 
 nav {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 28px;
-    padding: 14px 18px;
-    border-radius: 8px;
-    background: #0f172a;
+  display: flex;
+  gap: 12px;
+  margin-bottom: 28px;
+  padding: 14px 18px;
+  border-radius: 8px;
+  background: #0f172a;
 }
 
 nav a {
-    color: white;
-    text-decoration: none;
+  color: white;
+  text-decoration: none;
 }
 
 nav a:hover {
-    color: #93c5fd;
+  color: #93c5fd;
 }
 
 h1 {
-    color: #0f172a;
-    text-align: center;
+  color: #0f172a;
+  text-align: center;
 }
 
 form {
-    display: grid;
-    gap: 12px;
-    width: 100%;
-    max-width: 480px;
-    margin: 0 auto;
-    padding: 24px;
-    border-radius: 10px;
-    background: white;
-    box-shadow: 0 4px 14px rgb(0 0 0 / 10%);
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 24px;
+  border-radius: 10px;
+  background: white;
+  box-shadow: 0 4px 14px rgb(0 0 0 / 10%);
 }
 
 input,
 button {
-    width: 100%;
-    padding: 10px;
-    font: inherit;
+  width: 100%;
+  padding: 10px;
+  font: inherit;
 }
 
 button {
-    border: 0;
-    border-radius: 6px;
-    color: white;
-    background: #2563eb;
-    cursor: pointer;
+  border: 0;
+  border-radius: 6px;
+  color: white;
+  background: #2563eb;
+  cursor: pointer;
 }
 
 button:hover {
-    background: #1d4ed8;
+  background: #1d4ed8;
 }
 
 #message,
 #form-message {
-    color: #b91c1c;
+  color: #b91c1c;
 }
 
 ul {
-    color: #b91c1c;
+  color: #b91c1c;
 }
 
 /* Shared flash-message styles. */
 .alert {
-    min-width: 280px;
-    margin-bottom: 10px;
-    padding: 12px 16px;
-    border: 1px solid transparent;
-    border-radius: 6px;
-    text-align: center;
+  min-width: 280px;
+  margin-bottom: 10px;
+  padding: 12px 16px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  text-align: center;
 }
 
 .alert-success {
-    color: #14532d;
-    border-color: #86efac;
-    background: #dcfce7;
+  color: #14532d;
+  border-color: #86efac;
+  background: #dcfce7;
 }
 
 .alert-danger {
-    color: #7f1d1d;
-    border-color: #fca5a5;
-    background: #fee2e2;
+  color: #7f1d1d;
+  border-color: #fca5a5;
+  background: #fee2e2;
 }
 
 .alert-warning {
-    color: #713f12;
-    border-color: #fde047;
-    background: #fef9c3;
+  color: #713f12;
+  border-color: #fde047;
+  background: #fef9c3;
 }
 
 .alert-info {
-    color: #1e3a8a;
-    border-color: #93c5fd;
-    background: #dbeafe;
+  color: #1e3a8a;
+  border-color: #93c5fd;
+  background: #dbeafe;
 }
 
 .project-description {
-    text-align: center;
+  text-align: center;
 }
 
 .dashboard-welcome {
-    text-align: center;
+  text-align: center;
 }
-/* Aligns character-card actions in a compact two-column layout. */
 
+/* Aligns character-card actions in a compact two-column layout. */
 .character-actions {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.5rem;
-    width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  width: 100%;
 }
 
 .character-actions > a,
 .character-actions > form {
-    width: 100%;
-    max-width: none;
-    margin: 0;
+  width: 100%;
+  max-width: none;
+  margin: 0;
 }
 
 .character-actions > form {
-    display: block;
-    padding: 0;
-    border: 0;
-    background: transparent;
-    box-shadow: none;
+  display: block;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .character-actions .btn,
 .character-actions button {
-    display: block;
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    padding: 0.5rem 0.75rem;
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
 }
+
 /* mrc82 - 2026-08-07
-   Centers the View action within character cards. */
+Centers the View action within character cards. */
 
 .character-actions > a:first-child {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
+
 /* Milestone 3 association assignment page */
 .association-search-form {
-    max-width: none;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    background: transparent;
-    border: 0;
-    box-shadow: none;
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
 }
 
 .association-search-form .btn {
-    width: 100%;
-    white-space: nowrap;
+  width: 100%;
+  white-space: nowrap;
 }
