@@ -1,0 +1,11 @@
+-- mrc82 - 2026-07-16
+-- Creates the Users table for Milestone 1 account registration and login.
+
+CREATE TABLE IF NOT EXISTS Users (
+  id INT AUTO_INCREMENT,
+  modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  email VARCHAR(100) NOT NULL UNIQUE,
+  password_hash VARCHAR(60) NOT NULL,
+  PRIMARY KEY (id)
+);
